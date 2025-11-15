@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../application/project_form_notifier.dart';
@@ -37,6 +38,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   }
 
   Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(_provider.notifier);
     final success = await notifier.save();
     if (success && mounted) {
@@ -56,6 +58,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     return FormScaffold(
       title: state.id == null ? 'Proje Oluştur' : 'Projeyi Düzenle',
       onSave: state.canSubmit && !state.loading ? _save : null,
+      errorText: state.error,
       child: state.loading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -67,6 +70,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     key: ValueKey('project-title-${state.revision}'),
                     initialValue: state.title,
                     decoration: const InputDecoration(labelText: 'Başlık'),
+                    validator: Validators.required,
                     onChanged: notifier.setTitle,
                   ),
                   const SizedBox(height: 12),
@@ -74,6 +78,8 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     value: state.employerId,
                     decoration:
                         const InputDecoration(labelText: 'İşveren Seçin'),
+                    validator: (value) =>
+                        value == null ? 'İşveren seçmelisiniz' : null,
                     items: employers
                         .map(
                           (e) => DropdownMenuItem(
@@ -135,6 +141,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     key: ValueKey('project-budget-${state.revision}'),
                     initialValue: state.budget,
                     decoration: const InputDecoration(labelText: 'Bütçe (₺)'),
+                    validator: Validators.positiveDouble,
                     keyboardType: TextInputType.number,
                     onChanged: notifier.setBudget,
                   ),
@@ -147,13 +154,6 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     maxLines: 3,
                     onChanged: notifier.setDescription,
                   ),
-                  if (state.error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      state.error!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
                   const SizedBox(height: 32),
                 ],
               ),

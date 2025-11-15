@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
@@ -38,6 +39,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
   }
 
   Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(_provider.notifier);
     final success = await notifier.save();
     if (success && mounted) {
@@ -62,6 +64,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
 
     return FormScaffold(
       title: state.id == null ? 'Yeni İşlem' : 'İşlemi Düzenle',
+      errorText: state.error,
       onSave: state.canSubmit && !state.loading ? _save : null,
       child: state.loading
           ? const Center(child: CircularProgressIndicator())
@@ -93,21 +96,49 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
                     key: ValueKey('transaction-amount-${state.revision}'),
                     initialValue: state.amount,
                     decoration: const InputDecoration(labelText: 'Tutar (₺)'),
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    validator: Validators.positiveDouble,
                     onChanged: notifier.setAmount,
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    children: financeCategories
-                        .map(
-                          (cat) => ChoiceChip(
-                            label: Text(cat),
-                            selected: state.category == cat,
-                            onSelected: (_) => notifier.setCategory(cat),
+                  FormField<String>(
+                    key: ValueKey(
+                      'transaction-category-${state.revision}-${state.category}',
+                    ),
+                    initialValue: state.category,
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
+                            ? 'Kategori seçin'
+                            : null,
+                    builder: (field) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          children: financeCategories
+                              .map(
+                                (cat) => ChoiceChip(
+                                  label: Text(cat),
+                                  selected: state.category == cat,
+                                  onSelected: (_) {
+                                    notifier.setCategory(cat);
+                                    field.didChange(cat);
+                                  },
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        if (field.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              field.errorText!,
+                              style: const TextStyle(color: Colors.redAccent),
+                            ),
                           ),
-                        )
-                        .toList(),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
@@ -156,13 +187,6 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
                     ),
                     onTap: () => _pickDate(notifier, state.txDate),
                   ),
-                  if (state.error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      state.error!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
                   const SizedBox(height: 32),
                 ],
               ),

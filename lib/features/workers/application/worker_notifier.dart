@@ -9,9 +9,9 @@ import 'worker_state.dart';
 
 final workerNotifierProvider =
     StateNotifierProvider<WorkerNotifier, WorkerState>((ref) {
-      final repo = ref.read(workerRepositoryProvider);
-      return WorkerNotifier(repo)..loadWorkers();
-    });
+  final repo = ref.read(workerRepositoryProvider);
+  return WorkerNotifier(repo)..loadWorkers();
+});
 
 class WorkerNotifier extends StateNotifier<WorkerState> {
   WorkerNotifier(this._repository) : super(WorkerState.initial());
@@ -79,10 +79,29 @@ class WorkerNotifier extends StateNotifier<WorkerState> {
     state = state.copyWith(assignments: data);
   }
 
-  Future<void> addAssignment(WorkerAssignmentModel assignment) async {
-    await _repository.insertAssignment(assignment);
-    await loadAssignments(assignment.workerId);
-    await _updateSummary(assignment.workerId);
+  Future<String?> addAssignment(WorkerAssignmentModel assignment) async {
+    try {
+      if (assignment.hours <= 0) {
+        return 'Çalışma süresi 1\'den küçük olamaz';
+      }
+      final exists = await _repository.assignmentExists(
+        assignment.workerId,
+        assignment.projectId,
+        assignment.workDate,
+      );
+      if (exists) {
+        return 'Bu proje ve gün için zaten kayıt var';
+      }
+      await _repository.insertAssignment(assignment);
+      await loadAssignments(assignment.workerId);
+      await _updateSummary(assignment.workerId);
+      state = state.copyWith(error: null);
+      return null;
+    } catch (e) {
+      final message = e.toString();
+      state = state.copyWith(error: message);
+      return message;
+    }
   }
 
   Future<void> deleteAssignment(int assignmentId, int workerId) async {

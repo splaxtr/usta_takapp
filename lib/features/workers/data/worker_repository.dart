@@ -118,6 +118,29 @@ class WorkerRepository {
         );
   }
 
+  Future<bool> assignmentExists(
+    int workerId,
+    int projectId,
+    DateTime workDate,
+  ) async {
+    final startOfDay = DateTime(workDate.year, workDate.month, workDate.day);
+    final nextDay = startOfDay.add(const Duration(days: 1));
+    final countExpression = countAll();
+    final row = await (_db.selectOnly(_db.workerAssignments)
+          ..addColumns([countExpression])
+          ..where(_db.workerAssignments.workerId.equals(workerId))
+          ..where(_db.workerAssignments.projectId.equals(projectId))
+          ..where(
+            _db.workerAssignments.workDate.isBiggerOrEqualValue(startOfDay),
+          )
+          ..where(
+            _db.workerAssignments.workDate.isSmallerThanValue(nextDay),
+          ))
+        .getSingle();
+    final count = row.read(countExpression);
+    return count > 0;
+  }
+
   Future<int> deleteAssignment(int id) {
     return (_db.delete(
       _db.workerAssignments,

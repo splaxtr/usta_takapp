@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/payment_form_notifier.dart';
@@ -29,6 +30,7 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
   );
 
   Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(_provider.notifier);
     final success = await notifier.save();
     if (success && mounted) {
@@ -68,6 +70,7 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
 
     return FormScaffold(
       title: 'Ödeme Kaydı',
+      errorText: state.error,
       onSave: state.canSubmit ? _save : null,
       child: Form(
         key: _formKey,
@@ -77,6 +80,8 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
             DropdownButtonFormField<int>(
               decoration: const InputDecoration(labelText: 'Çalışan'),
               value: state.workerId,
+              validator: (value) =>
+                  value == null ? 'Çalışan seçmelisiniz' : null,
               items: workers
                   .map(
                     (worker) => DropdownMenuItem(
@@ -91,6 +96,7 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
             DropdownButtonFormField<int>(
               decoration: const InputDecoration(labelText: 'Proje'),
               value: state.projectId,
+              validator: (value) => value == null ? 'Proje seçmelisiniz' : null,
               items: projects
                   .map(
                     (project) => DropdownMenuItem(
@@ -106,7 +112,9 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
               key: ValueKey('payment-amount-${state.revision}'),
               initialValue: state.amount,
               decoration: const InputDecoration(labelText: 'Tutar (₺)'),
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              validator: Validators.positiveDouble,
               onChanged: notifier.setAmount,
             ),
             const SizedBox(height: 12),
@@ -126,13 +134,6 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
               ),
               onTap: () => _pickDate(state.paymentDate, notifier.setDate),
             ),
-            if (state.error != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                state.error!,
-                style: const TextStyle(color: Colors.redAccent),
-              ),
-            ],
             const SizedBox(height: 32),
           ],
         ),

@@ -33,15 +33,41 @@ class PaymentFormNotifier extends StateNotifier<PaymentFormState> {
   final Ref _ref;
   final WorkerRepository _repo;
 
-  void setWorker(int? id) => state = state.copyWith(workerId: id);
+  void setWorker(int? id) =>
+      state = state.copyWith(workerId: id, clearError: true);
 
-  void setProject(int? id) => state = state.copyWith(projectId: id);
+  void setProject(int? id) =>
+      state = state.copyWith(projectId: id, clearError: true);
 
-  void setAmount(String value) => state = state.copyWith(amount: value);
+  void setAmount(String value) =>
+      state = state.copyWith(amount: value, clearError: true);
 
-  void setNote(String value) => state = state.copyWith(note: value);
+  void setNote(String value) =>
+      state = state.copyWith(note: value, clearError: true);
 
-  void setDate(DateTime value) => state = state.copyWith(paymentDate: value);
+  void setDate(DateTime value) =>
+      state = state.copyWith(paymentDate: value, clearError: true);
+
+  Future<String?> _validate(int amount) async {
+    if (state.workerId == null) {
+      return 'Çalışan seçmelisiniz';
+    }
+    if (state.projectId == null) {
+      return 'Proje seçmelisiniz';
+    }
+    if (amount <= 0) {
+      return 'Tutar pozitif olmalı';
+    }
+    final remaining = await _repo.getRemainingAmount(state.workerId!);
+    if (remaining <= 0) {
+      return 'Hakediş bulunmuyor';
+    }
+    if (amount > remaining) {
+      final remainingText = (remaining / 100).toStringAsFixed(2);
+      return 'Hakediş aşımı! Maksimum $remainingText ₺ ödenebilir';
+    }
+    return null;
+  }
 
   Future<bool> save() async {
     if (!state.canSubmit) return false;
@@ -49,10 +75,16 @@ class PaymentFormNotifier extends StateNotifier<PaymentFormState> {
       state = state.copyWith(saving: true, clearError: true);
       final amount =
           (double.tryParse(state.amount.replaceAll(',', '.')) ?? 0) * 100;
+      final amountValue = amount.toInt();
+      final validation = await _validate(amountValue);
+      if (validation != null) {
+        state = state.copyWith(saving: false, error: validation);
+        return false;
+      }
       final payment = PaymentModel(
         workerId: state.workerId!,
         projectId: state.projectId!,
-        amount: amount.toInt(),
+        amount: amountValue,
         paymentDate: state.paymentDate,
         method: 'other',
         note: state.note.trim().isEmpty ? null : state.note,

@@ -4,12 +4,14 @@ class FormScaffold extends StatelessWidget {
   final String title;
   final Widget child;
   final VoidCallback? onSave;
+  final String? errorText;
 
   const FormScaffold({
     super.key,
     required this.title,
     required this.child,
     this.onSave,
+    this.errorText,
   });
 
   @override
@@ -27,7 +29,22 @@ class FormScaffold extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(child: child),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (errorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    errorText!,
+                    style: const TextStyle(color: Colors.redAccent),
+                  ),
+                ),
+              child,
+            ],
+          ),
+        ),
       ),
     );
   }
