@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_tile.dart';
 import '../domain/income_expense.dart';
 
 class AmountText extends StatelessWidget {
@@ -23,20 +24,6 @@ class AmountText extends StatelessWidget {
   }
 }
 
-class CategoryChip extends StatelessWidget {
-  const CategoryChip({super.key, required this.category});
-
-  final String category;
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      label: Text(category),
-      backgroundColor: Colors.white.withOpacity(0.08),
-    );
-  }
-}
-
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
     super.key,
@@ -51,52 +38,26 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.02),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            child: Text(
-              model.category.isNotEmpty
-                  ? model.category.substring(0, 1).toUpperCase()
-                  : '?',
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      model.category,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(width: 8),
-                    CategoryChip(
-                      category: model.type == 'income' ? 'Gelir' : 'Gider',
-                    ),
-                  ],
-                ),
-                if (projectName != null) Text('Proje: $projectName'),
-                if (employerName != null) Text('İşveren: $employerName'),
-                if (model.description != null && model.description!.isNotEmpty)
-                  Text(model.description!),
-                Text(
-                  'Tarih: ${model.txDate.toLocal().toString().split(' ').first}',
-                ),
-              ],
-            ),
-          ),
-          AmountText(amount: model.amount, type: model.type),
-        ],
-      ),
+    final typeLabel = model.type == 'income' ? 'Gelir' : 'Gider';
+    final subtitleLines = <String>[
+      if (projectName != null) 'Proje: $projectName',
+      if (employerName != null) 'İşveren: $employerName',
+      if (model.description != null && model.description!.isNotEmpty)
+        model.description!,
+      'Tarih: ${model.txDate.toLocal().toString().split(' ').first}',
+    ];
+
+    final subtitle = subtitleLines.isEmpty ? null : subtitleLines.join('\n');
+
+    final iconColor = model.type == 'income'
+        ? Colors.greenAccent
+        : Colors.redAccent;
+
+    return AppTile(
+      leading: Icon(Icons.account_balance_wallet_outlined, color: iconColor),
+      title: '${model.category} • $typeLabel',
+      subtitle: subtitle,
+      trailing: AmountText(amount: model.amount, type: model.type),
     );
   }
 }

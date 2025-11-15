@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/project_notifier.dart';
 import '../domain/project.dart';
@@ -44,7 +45,7 @@ class ProjectListPage extends ConsumerWidget {
                   },
                 );
               },
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemCount: state.projects.length,
             ),
       floatingActionButton: FloatingActionButton(
@@ -75,46 +76,40 @@ class ProjectCard extends StatelessWidget {
     final expenseText = summary != null
         ? (summary!.expense / 100).toStringAsFixed(2)
         : '-';
-    return InkWell(
+    return AppCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white.withOpacity(0.03),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    project.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.workspaces_outline),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  project.title,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                Chip(label: Text(project.status)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
-            ),
-            if (project.endDate != null)
-              Text(
-                'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
               ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: Text('Gelir: $incomeText ₺')),
-                Expanded(child: Text('Gider: $expenseText ₺')),
-              ],
+              Chip(label: Text(project.status)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
+          ),
+          if (project.endDate != null)
+            Text(
+              'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
             ),
-          ],
-        ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: Text('Gelir: $incomeText ₺')),
+              Expanded(child: Text('Gider: $expenseText ₺')),
+            ],
+          ),
+        ],
       ),
     );
   }

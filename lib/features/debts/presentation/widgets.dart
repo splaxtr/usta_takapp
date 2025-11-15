@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_tile.dart';
 import '../domain/debt.dart';
 import '../domain/debt_payment.dart';
 
@@ -10,12 +12,12 @@ class StatusBadge extends StatelessWidget {
 
   Color get _color {
     switch (status) {
-      case 'paid':
-        return Colors.green;
       case 'partial':
-        return Colors.orange;
+        return Colors.blueAccent;
+      case 'paid':
+        return Colors.greenAccent;
       default:
-        return Colors.redAccent;
+        return Colors.orangeAccent;
     }
   }
 
@@ -72,20 +74,19 @@ class DebtTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final remainingDays = debt.dueDate.difference(DateTime.now()).inDays;
-    return ListTile(
+    final subtitleParts = [
+      'Tutar: ${(debt.amount / 100).toStringAsFixed(2)} ₺',
+      'Vade: ${debt.dueDate.toLocal().toString().split(' ').first}',
+      if (projectName != null) 'Proje: $projectName',
+    ].where((element) => element.isNotEmpty).join(' • ');
+
+    return AppTile(
       onTap: onTap,
-      tileColor: Colors.white.withOpacity(0.02),
-      title: Text(employerName),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (projectName != null) Text('Proje: $projectName'),
-          Text('Vade: ${debt.dueDate.toLocal().toString().split(' ').first}'),
-          Text('Tutar: ${(debt.amount / 100).toStringAsFixed(2)} ₺'),
-        ],
-      ),
+      leading: const Icon(Icons.attach_money),
+      title: employerName,
+      subtitle: subtitleParts,
       trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           DueBadge(days: remainingDays),
           const SizedBox(height: 6),
@@ -103,14 +104,11 @@ class DebtPaymentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.02),
-      ),
+    return AppCard(
       child: Row(
         children: [
+          const Icon(Icons.attach_money),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,7 +125,6 @@ class DebtPaymentTile extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.receipt_long),
         ],
       ),
     );

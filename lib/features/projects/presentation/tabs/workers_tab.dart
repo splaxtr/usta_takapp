@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/app_tile.dart';
 import '../../../workers/domain/worker.dart';
 import '../../application/project_notifier.dart';
 import '../../domain/project_metrics.dart';
@@ -68,34 +69,13 @@ class WorkerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalDays = stats?.totalDays ?? 0;
     final totalCost = stats?.totalCost ?? 0;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.03),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(child: Text(worker.fullName.characters.first)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  worker.fullName,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  'Günlük Ücret: ${(worker.dailyRate / 100).toStringAsFixed(2)} ₺',
-                ),
-                Text('Toplam Gün: $totalDays'),
-              ],
-            ),
-          ),
-          Text('${(totalCost / 100).toStringAsFixed(2)} ₺'),
-        ],
-      ),
+    final subtitle =
+        'Günlük Ücret: ${(worker.dailyRate / 100).toStringAsFixed(2)} ₺ • Gün: $totalDays';
+    return AppTile(
+      leading: const Icon(Icons.person),
+      title: worker.fullName,
+      subtitle: subtitle,
+      trailing: Text('${(totalCost / 100).toStringAsFixed(2)} ₺'),
     );
   }
 }

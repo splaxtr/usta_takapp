@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_tile.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../debts/domain/debt.dart' as debt_model;
 import '../../debts/domain/debt_payment.dart' as debt_payment_model;
@@ -245,32 +247,19 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = model.type == 'income';
     final color = isIncome ? Colors.greenAccent : Colors.redAccent;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  model.category,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(model.description ?? '-'),
-              ],
-            ),
-          ),
-          Text(
-            '${isIncome ? '+' : '-'}${(model.amount / 100).toStringAsFixed(2)} ₺',
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ],
+    final subtitleLines = <String>[
+      if (model.description != null && model.description!.isNotEmpty)
+        model.description!,
+      'Tarih: ${model.txDate.toLocal().toString().split(' ').first}',
+    ];
+    final subtitle = subtitleLines.isEmpty ? null : subtitleLines.join('\n');
+    return AppTile(
+      leading: Icon(Icons.bar_chart, color: color),
+      title: '${model.category} • ${isIncome ? 'Gelir' : 'Gider'}',
+      subtitle: subtitle,
+      trailing: Text(
+        '${isIncome ? '+' : '-'}${(model.amount / 100).toStringAsFixed(2)} ₺',
+        style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -283,20 +272,11 @@ class AssignmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Proje: ${model.projectId}'),
-          Text('${model.hours} gün'),
-        ],
-      ),
+    return AppTile(
+      leading: const Icon(Icons.bar_chart),
+      title: 'Proje: ${model.projectId}',
+      subtitle:
+          'Gün/Saat: ${model.hours} • Tarih: ${model.workDate.toLocal().toString().split(' ').first}',
     );
   }
 }
@@ -308,23 +288,11 @@ class DebtTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Tutar: ${(model.amount / 100).toStringAsFixed(2)} ₺'),
-          Text(
-            'Tarih: ${model.borrowDate.toLocal().toString().split(' ').first}',
-          ),
-          Text('Durum: ${model.status}'),
-        ],
-      ),
+    return AppTile(
+      leading: const Icon(Icons.attach_money),
+      title: 'Tutar: ${(model.amount / 100).toStringAsFixed(2)} ₺',
+      subtitle:
+          'Tarih: ${model.borrowDate.toLocal().toString().split(' ').first} • Durum: ${model.status}',
     );
   }
 }
@@ -336,18 +304,20 @@ class DebtPaymentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return AppCard(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('${(model.amount / 100).toStringAsFixed(2)} ₺'),
-          Text(model.paymentDate.toLocal().toString().split(' ').first),
+          const Icon(Icons.attach_money),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${(model.amount / 100).toStringAsFixed(2)} ₺'),
+                Text(model.paymentDate.toLocal().toString().split(' ').first),
+              ],
+            ),
+          ),
         ],
       ),
     );

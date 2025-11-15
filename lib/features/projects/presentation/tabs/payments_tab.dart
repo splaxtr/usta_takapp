@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/app_card.dart';
 import '../../../workers/domain/payment.dart';
 import '../../application/project_notifier.dart';
 
@@ -24,9 +25,10 @@ class ProjectPaymentsTab extends ConsumerWidget {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: payments.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (_, index) => PaymentTile(payment: payments[index]),
           ),
         ),
@@ -58,15 +60,11 @@ class PaymentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.03),
-      ),
+    return AppCard(
       child: Row(
         children: [
+          const Icon(Icons.attach_money),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

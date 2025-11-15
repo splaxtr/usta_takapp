@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_tile.dart';
 import '../../debts/domain/debt.dart';
 import '../../projects/domain/project.dart';
 import '../domain/employer.dart';
@@ -36,17 +38,22 @@ class EmployerHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white.withOpacity(0.03),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(employer.name, style: Theme.of(context).textTheme.headlineSmall),
+          Row(
+            children: [
+              const Icon(Icons.business),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  employer.name,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           Text(employer.contact ?? 'İletişim bilgisi yok'),
           const SizedBox(height: 8),
@@ -65,41 +72,33 @@ class EmployerProjectTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.white.withOpacity(0.02),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    project.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Chip(label: Text(project.status)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
-              ),
-              if (project.endDate != null)
-                Text(
-                  'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
+              const Icon(Icons.workspaces_outline),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  project.title,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
+              ),
+              Chip(label: Text(project.status)),
             ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
+          ),
+          if (project.endDate != null)
+            Text(
+              'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
+            ),
+        ],
       ),
     );
   }
@@ -114,33 +113,77 @@ class EmployerDebtTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final remaining = debt.dueDate.difference(DateTime.now()).inDays;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: remaining <= 3 ? Colors.redAccent : Colors.orangeAccent,
-        ),
-      ),
+    final badgeColor = remaining <= 3
+        ? Colors.orangeAccent
+        : remaining <= 7
+        ? Colors.blueAccent
+        : Colors.grey;
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${(debt.amount / 100).toStringAsFixed(2)} ₺',
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            children: [
+              const Icon(Icons.attach_money),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${(debt.amount / 100).toStringAsFixed(2)} ₺',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              Chip(label: Text(debt.status)),
+            ],
           ),
+          const SizedBox(height: 8),
           Text('Vade: ${debt.dueDate.toLocal().toString().split(' ').first}'),
           Text('Durum: ${debt.status}'),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onTap,
-              child: const Text('Detaya git'),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: badgeColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('$remaining gün'),
+              ),
+              TextButton(onPressed: onTap, child: const Text('Detaya git')),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class EmployerListTile extends StatelessWidget {
+  const EmployerListTile({
+    super.key,
+    required this.employer,
+    required this.projectCount,
+    required this.debtAmount,
+    required this.onTap,
+  });
+
+  final Employer employer;
+  final int projectCount;
+  final int debtAmount;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppTile(
+      onTap: onTap,
+      leading: const Icon(Icons.business),
+      title: employer.name,
+      subtitle: 'Toplam Proje: $projectCount',
+      trailing: DebtBadge(amount: debtAmount),
     );
   }
 }

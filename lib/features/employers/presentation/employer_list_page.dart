@@ -102,30 +102,3 @@ class _EmployerListPageState extends ConsumerState<EmployerListPage> {
     );
   }
 }
-
-class EmployerListTile extends StatelessWidget {
-  const EmployerListTile({
-    super.key,
-    required this.employer,
-    required this.projectCount,
-    required this.debtAmount,
-    required this.onTap,
-  });
-
-  final Employer employer;
-  final int projectCount;
-  final int debtAmount;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      tileColor: Colors.white.withOpacity(0.03),
-      title: Text(employer.name),
-      subtitle: Text('Toplam Proje: $projectCount'),
-      trailing: DebtBadge(amount: debtAmount),
-    );
-  }
-}

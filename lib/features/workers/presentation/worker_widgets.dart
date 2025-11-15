@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_tile.dart';
 import '../domain/payment.dart';
 import '../domain/worker.dart';
 import '../domain/worker_assignment.dart';
@@ -12,14 +14,12 @@ class WorkerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return AppTile(
       onTap: onTap,
-      tileColor: Colors.white.withOpacity(0.02),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      title: Text(worker.fullName),
-      subtitle: Text(
-        'Günlük Ücret: ${(worker.dailyRate / 100).toStringAsFixed(2)} ₺',
-      ),
+      leading: const Icon(Icons.person),
+      title: worker.fullName,
+      subtitle:
+          'Günlük Ücret: ${(worker.dailyRate / 100).toStringAsFixed(2)} ₺',
       trailing: Chip(
         label: Text(worker.active ? 'Aktif' : 'Pasif'),
         backgroundColor: worker.active
@@ -42,16 +42,18 @@ class AssignmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.02),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(projectName ?? 'Proje'),
+          Row(
+            children: [
+              const Icon(Icons.workspaces_outline),
+              const SizedBox(width: 12),
+              Text(projectName ?? 'Proje'),
+            ],
+          ),
+          const SizedBox(height: 8),
           Text(
             'Tarih: ${assignment.workDate.toLocal().toString().split(' ').first}',
           ),
@@ -69,14 +71,11 @@ class WorkerPaymentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.02),
-      ),
+    return AppCard(
       child: Row(
         children: [
+          const Icon(Icons.attach_money),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
