@@ -6,6 +6,10 @@ class ReportDao extends DatabaseAccessor<AppDatabase> with _$ReportDaoMixin {
 
   Future<List<WeeklySnapshot>> fetchAll() => select(weeklySnapshots).get();
 
+  Future<WeeklySnapshot?> fetchByWeek(DateTime weekStart) {
+    return (select(weeklySnapshots)..where((w) => w.weekStart.equals(weekStart))).getSingleOrNull();
+  }
+
   Stream<WeeklySnapshot?> watchWeek(DateTime weekStart) {
     return (select(weeklySnapshots)..where((w) => w.weekStart.equals(weekStart))).watchSingleOrNull();
   }

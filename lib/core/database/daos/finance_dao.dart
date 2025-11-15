@@ -4,6 +4,10 @@ part of '../app_database.dart';
 class FinanceDao extends DatabaseAccessor<AppDatabase> with _$FinanceDaoMixin {
   FinanceDao(AppDatabase db) : super(db);
 
+  Future<IncomeExpenseData?> fetchById(int id) {
+    return (select(incomeExpense)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<IncomeExpenseData>> byProject(int projectId) {
     return (select(incomeExpense)..where((t) => t.projectId.equals(projectId))).get();
   }

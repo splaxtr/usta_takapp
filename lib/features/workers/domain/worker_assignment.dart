@@ -1,0 +1,53 @@
+class WorkerAssignmentModel {
+  final int? id;
+  final int workerId;
+  final int projectId;
+  final DateTime workDate;
+  final int hours;
+  final int? overtimeHours;
+
+  const WorkerAssignmentModel({
+    this.id,
+    required this.workerId,
+    required this.projectId,
+    required this.workDate,
+    required this.hours,
+    this.overtimeHours,
+  });
+
+  WorkerAssignmentModel copyWith({
+    int? id,
+    int? workerId,
+    int? projectId,
+    DateTime? workDate,
+    int? hours,
+    int? overtimeHours,
+  }) {
+    return WorkerAssignmentModel(
+      id: id ?? this.id,
+      workerId: workerId ?? this.workerId,
+      projectId: projectId ?? this.projectId,
+      workDate: workDate ?? this.workDate,
+      hours: hours ?? this.hours,
+      overtimeHours: overtimeHours ?? this.overtimeHours,
+    );
+  }
+
+  factory WorkerAssignmentModel.fromJson(Map<String, dynamic> json) => WorkerAssignmentModel(
+        id: json['id'] as int?,
+        workerId: json['workerId'] as int,
+        projectId: json['projectId'] as int,
+        workDate: DateTime.parse(json['workDate'] as String),
+        hours: json['hours'] as int,
+        overtimeHours: json['overtimeHours'] as int?,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'workerId': workerId,
+        'projectId': projectId,
+        'workDate': workDate.toIso8601String(),
+        'hours': hours,
+        'overtimeHours': overtimeHours,
+      };
+}

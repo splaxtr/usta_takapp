@@ -4,6 +4,10 @@ part of '../app_database.dart';
 class DebtDao extends DatabaseAccessor<AppDatabase> with _$DebtDaoMixin {
   DebtDao(AppDatabase db) : super(db);
 
+  Future<Debt?> fetchById(int id) {
+    return (select(debts)..where((d) => d.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<Debt>> fetchAll() => select(debts).get();
   Stream<List<Debt>> watchByStatus(String status) => (select(debts)..where((d) => d.status.equals(status))).watch();
   Future<int> insertDebt(DebtsCompanion entry) => into(debts).insert(entry);

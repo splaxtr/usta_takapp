@@ -4,6 +4,10 @@ part of '../app_database.dart';
 class WorkerDao extends DatabaseAccessor<AppDatabase> with _$WorkerDaoMixin {
   WorkerDao(AppDatabase db) : super(db);
 
+  Future<Worker?> fetchById(int id) {
+    return (select(workers)..where((w) => w.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<Worker>> fetchWorkers() => select(workers).get();
   Stream<List<Worker>> watchActive() => (select(workers)..where((w) => w.active.equals(true))).watch();
   Future<int> insertWorker(WorkersCompanion entry) => into(workers).insert(entry);

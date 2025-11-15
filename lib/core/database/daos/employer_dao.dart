@@ -4,6 +4,10 @@ part of '../app_database.dart';
 class EmployerDao extends DatabaseAccessor<AppDatabase> with _$EmployerDaoMixin {
   EmployerDao(AppDatabase db) : super(db);
 
+  Future<Employer?> fetchById(int id) {
+    return (select(employers)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<Employer>> fetchAll() => select(employers).get();
   Stream<List<Employer>> watchAll() => select(employers).watch();
   Future<int> insertEmployer(EmployersCompanion entry) => into(employers).insert(entry);
