@@ -115,7 +115,9 @@ class WorkerRepository {
             projectId: Value(assignment.projectId),
             workDate: Value(assignment.workDate),
             hours: Value(assignment.hours),
-            overtimeHours: Value(assignment.overtimeHours ?? 0),
+            overtimeHours: assignment.overtimeHours != null
+                ? Value(assignment.overtimeHours!)
+                : const Value.absent(),
           ),
         );
   }
@@ -198,6 +200,18 @@ class WorkerRepository {
     final paid = await getTotalPaidAmount(workerId);
     final remaining = worked - paid;
     return remaining < 0 ? 0 : remaining;
+  }
+
+  void mapperSanityCheckWorker(db.Worker row) {
+    _mapWorker(row);
+  }
+
+  void mapperSanityCheckAssignment(db.WorkerAssignment row) {
+    _mapAssignment(row);
+  }
+
+  void mapperSanityCheckPayment(db.Payment row) {
+    _mapPayment(row);
   }
 
   Future<void> repositorySanityCheck() async {

@@ -36,6 +36,11 @@ class EmployerMapper {
             ? Value(model.updatedAt!)
             : Value(DateTime.now()),
       );
+
+  static void sanityCheck(db.Employer row) {
+    final model = EmployerMapper.toDomain(row);
+    EmployerMapper.toInsert(model);
+  }
 }
 
 class EmployerRepository {

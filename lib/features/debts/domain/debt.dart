@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+
+const Object _undefined = Object();
+
+@immutable
 class Debt {
   final int? id;
   final int employerId;
@@ -20,46 +25,46 @@ class Debt {
   });
 
   Debt copyWith({
-    int? id,
     int? employerId,
-    int? projectId,
     int? amount,
     DateTime? borrowDate,
     DateTime? dueDate,
     String? status,
-    String? description,
-  }) {
-    return Debt(
-      id: id ?? this.id,
-      employerId: employerId ?? this.employerId,
-      projectId: projectId ?? this.projectId,
-      amount: amount ?? this.amount,
-      borrowDate: borrowDate ?? this.borrowDate,
-      dueDate: dueDate ?? this.dueDate,
-      status: status ?? this.status,
-      description: description ?? this.description,
-    );
-  }
+    Object? id = _undefined,
+    Object? projectId = _undefined,
+    Object? description = _undefined,
+  }) => Debt(
+    id: id == _undefined ? this.id : id as int?,
+    employerId: employerId ?? this.employerId,
+    projectId: projectId == _undefined ? this.projectId : projectId as int?,
+    amount: amount ?? this.amount,
+    borrowDate: borrowDate ?? this.borrowDate,
+    dueDate: dueDate ?? this.dueDate,
+    status: status ?? this.status,
+    description: description == _undefined
+        ? this.description
+        : description as String?,
+  );
 
   factory Debt.fromJson(Map<String, dynamic> json) => Debt(
-        id: json['id'] as int?,
-        employerId: json['employerId'] as int,
-        projectId: json['projectId'] as int?,
-        amount: json['amount'] as int,
-        borrowDate: DateTime.parse(json['borrowDate'] as String),
-        dueDate: DateTime.parse(json['dueDate'] as String),
-        status: json['status'] as String,
-        description: json['description'] as String?,
-      );
+    id: json['id'] as int?,
+    employerId: json['employerId'] as int,
+    projectId: json['projectId'] as int?,
+    amount: json['amount'] as int,
+    borrowDate: DateTime.parse(json['borrowDate'] as String),
+    dueDate: DateTime.parse(json['dueDate'] as String),
+    status: json['status'] as String,
+    description: json['description'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'employerId': employerId,
-        'projectId': projectId,
-        'amount': amount,
-        'borrowDate': borrowDate.toIso8601String(),
-        'dueDate': dueDate.toIso8601String(),
-        'status': status,
-        'description': description,
-      };
+    'id': id,
+    'employerId': employerId,
+    'projectId': projectId,
+    'amount': amount,
+    'borrowDate': borrowDate.toIso8601String(),
+    'dueDate': dueDate.toIso8601String(),
+    'status': status,
+    'description': description,
+  };
 }

@@ -85,6 +85,32 @@ class DashboardRepository {
         .toList();
   }
 
+  void mapperSanityCheckProject(db.Project row) {
+    final _ = Project(
+      id: row.id,
+      employerId: row.employerId,
+      title: row.title,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      status: row.status,
+      budget: row.budget,
+      description: row.description,
+    );
+  }
+
+  void mapperSanityCheckDebt(db.Debt row) {
+    final _ = Debt(
+      id: row.id,
+      employerId: row.employerId,
+      projectId: row.projectId,
+      amount: row.amount,
+      borrowDate: row.borrowDate,
+      dueDate: row.dueDate,
+      status: row.status,
+      description: row.description,
+    );
+  }
+
   Future<void> repositorySanityCheck() async {
     final active = await fetchActiveProjects();
     debugPrint('DashboardRepository OK: ${active.length} aktif proje');

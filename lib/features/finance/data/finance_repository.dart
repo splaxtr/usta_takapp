@@ -161,6 +161,10 @@ class FinanceRepository {
     return row.read<int>('total');
   }
 
+  void mapperSanityCheck(db.IncomeExpenseData row) {
+    _toCompanion(_map(row));
+  }
+
   Future<void> repositorySanityCheck() async {
     final rows = await fetchAll();
     debugPrint('FinanceRepository OK: ${rows.length} kayıt');

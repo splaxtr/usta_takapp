@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+
+const Object _undefined = Object();
+
+@immutable
 class PaymentModel {
   final int? id;
   final int workerId;
@@ -18,42 +23,40 @@ class PaymentModel {
   });
 
   PaymentModel copyWith({
-    int? id,
     int? workerId,
     int? projectId,
     int? amount,
     DateTime? paymentDate,
     String? method,
-    String? note,
-  }) {
-    return PaymentModel(
-      id: id ?? this.id,
-      workerId: workerId ?? this.workerId,
-      projectId: projectId ?? this.projectId,
-      amount: amount ?? this.amount,
-      paymentDate: paymentDate ?? this.paymentDate,
-      method: method ?? this.method,
-      note: note ?? this.note,
-    );
-  }
+    Object? id = _undefined,
+    Object? note = _undefined,
+  }) => PaymentModel(
+    id: id == _undefined ? this.id : id as int?,
+    workerId: workerId ?? this.workerId,
+    projectId: projectId ?? this.projectId,
+    amount: amount ?? this.amount,
+    paymentDate: paymentDate ?? this.paymentDate,
+    method: method ?? this.method,
+    note: note == _undefined ? this.note : note as String?,
+  );
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) => PaymentModel(
-        id: json['id'] as int?,
-        workerId: json['workerId'] as int,
-        projectId: json['projectId'] as int,
-        amount: json['amount'] as int,
-        paymentDate: DateTime.parse(json['paymentDate'] as String),
-        method: json['method'] as String,
-        note: json['note'] as String?,
-      );
+    id: json['id'] as int?,
+    workerId: json['workerId'] as int,
+    projectId: json['projectId'] as int,
+    amount: json['amount'] as int,
+    paymentDate: DateTime.parse(json['paymentDate'] as String),
+    method: json['method'] as String,
+    note: json['note'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'workerId': workerId,
-        'projectId': projectId,
-        'amount': amount,
-        'paymentDate': paymentDate.toIso8601String(),
-        'method': method,
-        'note': note,
-      };
+    'id': id,
+    'workerId': workerId,
+    'projectId': projectId,
+    'amount': amount,
+    'paymentDate': paymentDate.toIso8601String(),
+    'method': method,
+    'note': note,
+  };
 }

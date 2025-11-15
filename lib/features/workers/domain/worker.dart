@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+
+const Object _undefined = Object();
+
+@immutable
 class WorkerModel {
   final int? id;
   final String fullName;
@@ -16,38 +21,36 @@ class WorkerModel {
   });
 
   WorkerModel copyWith({
-    int? id,
     String? fullName,
     int? dailyRate,
-    String? phone,
-    String? note,
     bool? active,
-  }) {
-    return WorkerModel(
-      id: id ?? this.id,
-      fullName: fullName ?? this.fullName,
-      dailyRate: dailyRate ?? this.dailyRate,
-      phone: phone ?? this.phone,
-      note: note ?? this.note,
-      active: active ?? this.active,
-    );
-  }
+    Object? id = _undefined,
+    Object? phone = _undefined,
+    Object? note = _undefined,
+  }) => WorkerModel(
+    id: id == _undefined ? this.id : id as int?,
+    fullName: fullName ?? this.fullName,
+    dailyRate: dailyRate ?? this.dailyRate,
+    phone: phone == _undefined ? this.phone : phone as String?,
+    note: note == _undefined ? this.note : note as String?,
+    active: active ?? this.active,
+  );
 
   factory WorkerModel.fromJson(Map<String, dynamic> json) => WorkerModel(
-        id: json['id'] as int?,
-        fullName: json['fullName'] as String,
-        dailyRate: json['dailyRate'] as int,
-        phone: json['phone'] as String?,
-        note: json['note'] as String?,
-        active: json['active'] as bool? ?? true,
-      );
+    id: json['id'] as int?,
+    fullName: json['fullName'] as String,
+    dailyRate: json['dailyRate'] as int,
+    phone: json['phone'] as String?,
+    note: json['note'] as String?,
+    active: json['active'] as bool? ?? true,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'fullName': fullName,
-        'dailyRate': dailyRate,
-        'phone': phone,
-        'note': note,
-        'active': active,
-      };
+    'id': id,
+    'fullName': fullName,
+    'dailyRate': dailyRate,
+    'phone': phone,
+    'note': note,
+    'active': active,
+  };
 }

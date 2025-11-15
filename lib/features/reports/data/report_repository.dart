@@ -242,4 +242,8 @@ class ReportRepository {
     final rows = await _dao.fetchAll();
     debugPrint('ReportRepository OK: ${rows.length} snapshot');
   }
+
+  void mapperSanityCheck(db.WeeklySnapshot row) {
+    _mapSnapshot(row);
+  }
 }

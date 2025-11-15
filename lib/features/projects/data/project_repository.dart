@@ -40,7 +40,12 @@ class ProjectMapper {
     status: Value(model.status),
     budget: Value(model.budget),
     description: Value(model.description),
-  );
+      );
+
+  static void sanityCheck(db.Project row) {
+    final model = ProjectMapper.toDomain(row);
+    ProjectMapper.toInsert(model);
+  }
 }
 
 class ProjectWorkersResult {

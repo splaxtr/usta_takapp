@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+
+const Object _undefined = Object();
+
+@immutable
 class IncomeExpenseModel {
   final int? id;
   final int projectId;
@@ -20,28 +25,29 @@ class IncomeExpenseModel {
   });
 
   IncomeExpenseModel copyWith({
-    int? id,
     int? projectId,
     int? employerId,
     String? type,
     String? category,
     int? amount,
-    String? description,
     DateTime? txDate,
-  }) {
-    return IncomeExpenseModel(
-      id: id ?? this.id,
-      projectId: projectId ?? this.projectId,
-      employerId: employerId ?? this.employerId,
-      type: type ?? this.type,
-      category: category ?? this.category,
-      amount: amount ?? this.amount,
-      description: description ?? this.description,
-      txDate: txDate ?? this.txDate,
-    );
-  }
+    Object? id = _undefined,
+    Object? description = _undefined,
+  }) => IncomeExpenseModel(
+    id: id == _undefined ? this.id : id as int?,
+    projectId: projectId ?? this.projectId,
+    employerId: employerId ?? this.employerId,
+    type: type ?? this.type,
+    category: category ?? this.category,
+    amount: amount ?? this.amount,
+    description: description == _undefined
+        ? this.description
+        : description as String?,
+    txDate: txDate ?? this.txDate,
+  );
 
-  factory IncomeExpenseModel.fromJson(Map<String, dynamic> json) => IncomeExpenseModel(
+  factory IncomeExpenseModel.fromJson(Map<String, dynamic> json) =>
+      IncomeExpenseModel(
         id: json['id'] as int?,
         projectId: json['projectId'] as int,
         employerId: json['employerId'] as int,
@@ -53,13 +59,13 @@ class IncomeExpenseModel {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'projectId': projectId,
-        'employerId': employerId,
-        'type': type,
-        'category': category,
-        'amount': amount,
-        'description': description,
-        'txDate': txDate.toIso8601String(),
-      };
+    'id': id,
+    'projectId': projectId,
+    'employerId': employerId,
+    'type': type,
+    'category': category,
+    'amount': amount,
+    'description': description,
+    'txDate': txDate.toIso8601String(),
+  };
 }

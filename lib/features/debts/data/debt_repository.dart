@@ -141,6 +141,14 @@ class DebtRepository {
     );
   }
 
+  void mapperSanityCheckDebt(db.Debt row) {
+    _toCompanion(_mapDebt(row));
+  }
+
+  void mapperSanityCheckPayment(db.DebtPayment row) {
+    _mapPayment(row);
+  }
+
   Future<void> repositorySanityCheck() async {
     final rows = await _dao.fetchAll();
     debugPrint('DebtRepository OK: ${rows.length} kayıt');
