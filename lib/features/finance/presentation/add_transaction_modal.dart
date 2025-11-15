@@ -154,14 +154,12 @@ class _AddTransactionModalState extends ConsumerState<AddTransactionModal> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed:
-                    employerId == null ||
+                onPressed: employerId == null ||
                         projectId == null ||
                         amountController.text.isEmpty
                     ? null
                     : () async {
-                        final amount =
-                            (double.tryParse(
+                        final amount = (double.tryParse(
                                   amountController.text.replaceAll(',', '.'),
                                 ) ??
                                 0) *
@@ -181,9 +179,7 @@ class _AddTransactionModalState extends ConsumerState<AddTransactionModal> {
                         await ref
                             .read(projectNotifierProvider.notifier)
                             .loadProjectDetail(projectId!);
-                        await ref
-                            .read(dashboardProvider.notifier)
-                            .loadDashboard();
+                        await ref.read(dashboardProvider.notifier).refresh();
                         Navigator.pop(context);
                       },
                 child: const Text('Kaydet'),

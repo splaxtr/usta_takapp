@@ -2,50 +2,52 @@ import '../../debts/domain/debt.dart';
 import '../../projects/domain/project.dart';
 
 class DashboardState {
-  final bool loading;
   final int totalIncome;
   final int totalExpense;
+  int get netBalance => totalIncome - totalExpense;
+
   final int totalDebt;
-  final List<Project> activeProjects;
   final List<Debt> upcomingDebts;
+  final List<Project> activeProjects;
+
+  final bool loading;
   final String? error;
 
-  const DashboardState({
-    required this.loading,
+  DashboardState({
     required this.totalIncome,
     required this.totalExpense,
     required this.totalDebt,
-    required this.activeProjects,
     required this.upcomingDebts,
+    required this.activeProjects,
+    this.loading = false,
     this.error,
   });
 
-  factory DashboardState.initial() => const DashboardState(
-        loading: true,
+  factory DashboardState.initial() => DashboardState(
         totalIncome: 0,
         totalExpense: 0,
         totalDebt: 0,
-        activeProjects: [],
-        upcomingDebts: [],
+        upcomingDebts: const [],
+        activeProjects: const [],
+        loading: true,
       );
 
   DashboardState copyWith({
-    bool? loading,
     int? totalIncome,
     int? totalExpense,
     int? totalDebt,
-    List<Project>? activeProjects,
     List<Debt>? upcomingDebts,
+    List<Project>? activeProjects,
+    bool? loading,
     String? error,
-  }) {
-    return DashboardState(
-      loading: loading ?? this.loading,
-      totalIncome: totalIncome ?? this.totalIncome,
-      totalExpense: totalExpense ?? this.totalExpense,
-      totalDebt: totalDebt ?? this.totalDebt,
-      activeProjects: activeProjects ?? this.activeProjects,
-      upcomingDebts: upcomingDebts ?? this.upcomingDebts,
-      error: error,
-    );
-  }
+  }) =>
+      DashboardState(
+        totalIncome: totalIncome ?? this.totalIncome,
+        totalExpense: totalExpense ?? this.totalExpense,
+        totalDebt: totalDebt ?? this.totalDebt,
+        upcomingDebts: upcomingDebts ?? this.upcomingDebts,
+        activeProjects: activeProjects ?? this.activeProjects,
+        loading: loading ?? this.loading,
+        error: error,
+      );
 }

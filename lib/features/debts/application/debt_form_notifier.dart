@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
-import '../data/debt_repository.dart';
+import '../../dashboard/application/dashboard_notifier.dart';
 import '../../employers/data/employer_repository.dart';
+import '../data/debt_repository.dart';
 import '../domain/debt.dart';
 import 'debt_form_state.dart';
 import 'debt_notifier.dart';
@@ -133,6 +134,7 @@ class DebtFormNotifier extends StateNotifier<DebtFormState> {
         await _repo.updateDebt(debt);
       }
       await _ref.read(debtNotifierProvider.notifier).loadDebts();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

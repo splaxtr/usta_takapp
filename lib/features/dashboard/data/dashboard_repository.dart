@@ -10,105 +10,87 @@ class DashboardRepository {
 
   final db.AppDatabase _db;
 
-  Future<int> fetchTotalIncome() async {
-    final query = _db.customSelect(
+  Future<int> getTotalIncome() async {
+    final row = await _db.customSelect(
       'SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = ?1',
       variables: [const Variable<String>('income')],
-    );
-    final row = await query.getSingle();
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
-  Future<int> fetchTotalExpense() async {
-    final query = _db.customSelect(
+  Future<int> getTotalExpense() async {
+    final row = await _db.customSelect(
       'SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = ?1',
       variables: [const Variable<String>('expense')],
-    );
-    final row = await query.getSingle();
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
+  }
+
+  Future<int> getTotalDebtPending() async {
+    final row = await _db.customSelect(
+      '''
+        SELECT COALESCE(SUM(d.amount - COALESCE((
+          SELECT SUM(dp.amount) FROM debt_payments dp WHERE dp.debt_id = d.id
+        ), 0)), 0) AS total
+        FROM debts d
+        WHERE d.status IN ('pending','partial')
+      ''',
+      readsFrom: {_db.debts, _db.debtPayments},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<List<Debt>> getUpcomingDueDebts() async {
+    final horizon = DateTime.now().add(const Duration(days: 7));
+    final rows = await (_db.select(_db.debts)
+          ..where(
+            (tbl) =>
+                tbl.dueDate.isSmallerOrEqualValue(horizon) &
+                tbl.status.isNotIn(['paid']),
+          )
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)]))
+        .get();
+    return rows.map(_mapDebt).toList();
   }
 
   Future<List<Project>> fetchActiveProjects() async {
-    final rows = await (_db.select(
-      _db.projects,
-    )..where((tbl) => tbl.status.equals('active'))).get();
-    return rows
-        .map(
-          (row) => Project(
-            id: row.id,
-            employerId: row.employerId,
-            title: row.title,
-            startDate: row.startDate,
-            endDate: row.endDate,
-            status: row.status,
-            budget: row.budget,
-            description: row.description,
-          ),
-        )
-        .toList();
+    final rows = await (_db.select(_db.projects)
+          ..where((tbl) => tbl.status.equals('active')))
+        .get();
+    return rows.map(_mapProject).toList();
   }
 
-  Future<int> fetchTotalEmployerDebt() async {
-    final query = _db.customSelect(
-      "SELECT COALESCE(SUM(amount), 0) AS total FROM debts WHERE status IN ('pending','partial')",
-    );
-    final row = await query.getSingle();
-    return row.read<int>('total');
-  }
+  Project _mapProject(db.Project row) => Project(
+        id: row.id,
+        employerId: row.employerId,
+        title: row.title,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        status: row.status,
+        budget: row.budget,
+        description: row.description,
+      );
 
-  Future<List<Debt>> fetchUpcomingDebts() async {
-    final now = DateTime.now();
-    final limitDate = now.add(const Duration(days: 7));
-    final rows =
-        await (_db.select(_db.debts)
-              ..where(
-                (tbl) =>
-                    tbl.status.isIn(['pending', 'partial']) &
-                    tbl.dueDate.isBetweenValues(now, limitDate),
-              )
-              ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)])
-              ..limit(10))
-            .get();
-    return rows
-        .map(
-          (row) => Debt(
-            id: row.id,
-            employerId: row.employerId,
-            projectId: row.projectId,
-            amount: row.amount,
-            borrowDate: row.borrowDate,
-            dueDate: row.dueDate,
-            status: row.status,
-            description: row.description,
-          ),
-        )
-        .toList();
-  }
+  Debt _mapDebt(db.Debt row) => Debt(
+        id: row.id,
+        employerId: row.employerId,
+        projectId: row.projectId,
+        amount: row.amount,
+        borrowDate: row.borrowDate,
+        dueDate: row.dueDate,
+        status: DebtStatusX.fromString(row.status),
+        description: row.description,
+        createdAt: row.createdAt,
+      );
 
   void mapperSanityCheckProject(db.Project row) {
-    final _ = Project(
-      id: row.id,
-      employerId: row.employerId,
-      title: row.title,
-      startDate: row.startDate,
-      endDate: row.endDate,
-      status: row.status,
-      budget: row.budget,
-      description: row.description,
-    );
+    _mapProject(row);
   }
 
   void mapperSanityCheckDebt(db.Debt row) {
-    final _ = Debt(
-      id: row.id,
-      employerId: row.employerId,
-      projectId: row.projectId,
-      amount: row.amount,
-      borrowDate: row.borrowDate,
-      dueDate: row.dueDate,
-      status: row.status,
-      description: row.description,
-    );
+    _mapDebt(row);
   }
 
   Future<void> repositorySanityCheck() async {

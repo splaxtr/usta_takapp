@@ -111,7 +111,7 @@ class TransactionFormNotifier extends StateNotifier<TransactionFormState> {
       }
       await _ref.read(financeNotifierProvider.notifier).loadAll();
       await _ref.read(projectNotifierProvider.notifier).loadProjects();
-      await _ref.read(dashboardProvider.notifier).loadDashboard();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../dashboard/application/dashboard_notifier.dart';
 import '../data/project_repository.dart';
 import '../domain/project.dart';
 import 'project_form_state.dart';
@@ -123,6 +124,7 @@ class ProjectFormNotifier extends StateNotifier<ProjectFormState> {
         await _repo.update(project);
       }
       await _ref.read(projectNotifierProvider.notifier).loadProjects();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

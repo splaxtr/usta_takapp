@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../dashboard/application/dashboard_notifier.dart';
 import '../data/employer_repository.dart';
 import '../domain/employer.dart';
 import 'employer_form_state.dart';
@@ -106,6 +107,7 @@ class EmployerFormNotifier extends StateNotifier<EmployerFormState> {
         await _repo.update(employer);
       }
       await _ref.read(employerNotifierProvider.notifier).loadEmployers();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

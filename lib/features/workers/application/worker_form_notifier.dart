@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../dashboard/application/dashboard_notifier.dart';
 import '../data/worker_repository.dart';
 import '../domain/worker.dart';
 import 'worker_form_state.dart';
@@ -103,6 +104,7 @@ class WorkerFormNotifier extends StateNotifier<WorkerFormState> {
         await _repo.updateWorker(worker);
       }
       await _ref.read(workerNotifierProvider.notifier).loadWorkers();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

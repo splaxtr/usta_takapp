@@ -1,41 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
-import '../data/dashboard_repository.dart';
 import 'dashboard_state.dart';
 
 final dashboardProvider =
     StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-      final repo = ref.read(dashboardRepositoryProvider);
-      return DashboardNotifier(repo)..loadDashboard();
-    });
+  final notifier = DashboardNotifier(ref.read);
+  notifier.load();
+  return notifier;
+});
 
 class DashboardNotifier extends StateNotifier<DashboardState> {
-  DashboardNotifier(this._repository) : super(DashboardState.initial());
+  DashboardNotifier(this._read) : super(DashboardState.initial());
 
-  final DashboardRepository _repository;
+  final Reader _read;
 
-  Future<void> loadDashboard() async {
+  Future<void> load() async {
     try {
       state = state.copyWith(loading: true, error: null);
+      final repo = _read(dashboardRepositoryProvider);
       final results = await Future.wait([
-        _repository.fetchTotalIncome(),
-        _repository.fetchTotalExpense(),
-        _repository.fetchTotalEmployerDebt(),
-        _repository.fetchActiveProjects(),
-        _repository.fetchUpcomingDebts(),
+        repo.getTotalIncome(),
+        repo.getTotalExpense(),
+        repo.getTotalDebtPending(),
+        repo.getUpcomingDueDebts(),
+        repo.fetchActiveProjects(),
       ]);
-
       state = state.copyWith(
-        loading: false,
         totalIncome: results[0] as int,
         totalExpense: results[1] as int,
         totalDebt: results[2] as int,
-        activeProjects: results[3] as List,
-        upcomingDebts: results[4] as List,
+        upcomingDebts: results[3] as List,
+        activeProjects: results[4] as List,
+        loading: false,
       );
     } catch (e) {
-      state = state.copyWith(loading: false, error: e.toString());
+      state = state.copyWith(
+        loading: false,
+        error: e.toString(),
+      );
     }
   }
+
+  Future<void> refresh() => load();
 }

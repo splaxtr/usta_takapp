@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/route_args.dart';
+import '../../dashboard/application/dashboard_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../data/worker_repository.dart';
 import '../domain/payment.dart';
@@ -86,6 +87,7 @@ class PaymentFormNotifier extends StateNotifier<PaymentFormState> {
       await _repo.insertPayment(payment);
       await _ref.read(workerNotifierProvider.notifier).loadWorkers();
       await _ref.read(projectNotifierProvider.notifier).loadProjects();
+      await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;
     } catch (e) {

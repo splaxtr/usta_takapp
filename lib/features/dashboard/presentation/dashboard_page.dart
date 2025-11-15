@@ -8,6 +8,10 @@ import '../../debts/domain/debt.dart';
 import '../../projects/domain/project.dart';
 import '../application/dashboard_notifier.dart';
 
+String _formatCurrency(int amount) {
+  return '${(amount / 100).toStringAsFixed(2)} ₺';
+}
+
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
@@ -63,11 +67,11 @@ class DashboardPage extends ConsumerWidget {
                             ),
                             StatCard(
                               title: 'Net Bakiye',
-                              amount: state.totalIncome - state.totalExpense,
+                              amount: state.netBalance,
                               color: Colors.blue,
                             ),
                             StatCard(
-                              title: 'Toplam Borç',
+                              title: 'İşveren Borcu',
                               amount: state.totalDebt,
                               color: Colors.orange,
                             ),
@@ -82,30 +86,33 @@ class DashboardPage extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        SizedBox(
-                          height: 140,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (_, index) {
-                              final project = state.activeProjects[index];
-                              return ProjectMiniCard(
-                                project: project,
-                                onTap: project.id == null
-                                    ? null
-                                    : () => Navigator.pushNamed(
-                                          context,
-                                          '/project/detail',
-                                          arguments: ProjectDetailArgs(
-                                            projectId: project.id!,
+                        if (state.activeProjects.isEmpty)
+                          const Text('Aktif proje bulunamadı')
+                        else
+                          SizedBox(
+                            height: 140,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (_, index) {
+                                final project = state.activeProjects[index];
+                                return ProjectMiniCard(
+                                  project: project,
+                                  onTap: project.id == null
+                                      ? null
+                                      : () => Navigator.pushNamed(
+                                            context,
+                                            '/project/detail',
+                                            arguments: ProjectDetailArgs(
+                                              projectId: project.id!,
+                                            ),
                                           ),
-                                        ),
-                              );
-                            },
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 12),
-                            itemCount: state.activeProjects.length,
+                                );
+                              },
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 12),
+                              itemCount: state.activeProjects.length,
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 24),
                         const Text(
                           'Yaklaşan Vadeler',
@@ -115,24 +122,27 @@ class DashboardPage extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Column(
-                          children: state.upcomingDebts
-                              .map(
-                                (d) => UpcomingDebtTile(
-                                  debt: d,
-                                  onTap: d.id == null
-                                      ? null
-                                      : () => Navigator.pushNamed(
-                                            context,
-                                            '/debt/detail',
-                                            arguments: DebtDetailArgs(
-                                              debtId: d.id!,
+                        if (state.upcomingDebts.isEmpty)
+                          const Text('Yaklaşan vade bulunmuyor')
+                        else
+                          Column(
+                            children: state.upcomingDebts
+                                .map(
+                                  (d) => UpcomingDebtTile(
+                                    debt: d,
+                                    onTap: d.id == null
+                                        ? null
+                                        : () => Navigator.pushNamed(
+                                              context,
+                                              '/debt/detail',
+                                              arguments: DebtDetailArgs(
+                                                debtId: d.id!,
+                                              ),
                                             ),
-                                          ),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
                       ],
                     ),
                   ),
@@ -178,7 +188,7 @@ class StatCard extends StatelessWidget {
           Text(title, style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
           Text(
-            '${amount / 100} ₺',
+            _formatCurrency(amount),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ],
@@ -217,7 +227,7 @@ class ProjectMiniCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text('Durum: ${project.status}'),
               const Spacer(),
-              Text('Bütçe: ${(project.budget / 100).toStringAsFixed(2)} ₺'),
+              Text('Bütçe: ${_formatCurrency(project.budget)}'),
             ],
           ),
         ),
@@ -254,7 +264,7 @@ class UpcomingDebtTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${(debt.amount / 100).toStringAsFixed(2)} ₺',
+                      _formatCurrency(debt.amount),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
