@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/worker_notifier.dart';
 import '../application/worker_state.dart';
@@ -52,7 +53,7 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(worker.fullName)),
+      appBar: CommonAppBar(title: worker.fullName),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(

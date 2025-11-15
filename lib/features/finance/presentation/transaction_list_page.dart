@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/finance_notifier.dart';
@@ -42,7 +43,7 @@ class _TransactionListPageState extends ConsumerState<TransactionListPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Gelir & Gider')),
+      appBar: const CommonAppBar(title: 'Gelir/Gider'),
       body: Column(
         children: [
           Padding(

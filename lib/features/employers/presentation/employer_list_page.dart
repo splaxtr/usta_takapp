@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
 import 'widgets.dart';
@@ -24,7 +25,7 @@ class _EmployerListPageState extends ConsumerState<EmployerListPage> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('İşverenler')),
+      appBar: const CommonAppBar(title: 'İşverenler'),
       body: Column(
         children: [
           Padding(

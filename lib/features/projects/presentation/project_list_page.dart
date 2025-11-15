@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../application/project_notifier.dart';
 import '../domain/project.dart';
 import '../domain/project_metrics.dart';
@@ -13,8 +14,8 @@ class ProjectListPage extends ConsumerWidget {
     final state = ref.watch(projectNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Projeler'),
+      appBar: CommonAppBar(
+        title: 'Projeler',
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list)),
         ],

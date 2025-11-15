@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../application/worker_notifier.dart';
 import '../domain/worker.dart';
 import 'add_worker_modal.dart';
@@ -33,7 +34,7 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Çalışanlar')),
+      appBar: const CommonAppBar(title: 'Çalışanlar'),
       body: Column(
         children: [
           Padding(

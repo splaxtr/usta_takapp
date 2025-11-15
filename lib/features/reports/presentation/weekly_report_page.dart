@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../debts/domain/debt.dart' as debt_model;
 import '../../debts/domain/debt_payment.dart' as debt_payment_model;
 import '../../finance/domain/income_expense.dart';
@@ -25,7 +26,7 @@ class WeeklyReportPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Haftalık Rapor')),
+      appBar: const CommonAppBar(title: 'Haftalık Rapor'),
       body: RefreshIndicator(
         onRefresh: notifier.loadWeekData,
         child: SingleChildScrollView(

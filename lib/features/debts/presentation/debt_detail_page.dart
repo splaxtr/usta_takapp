@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/debt_notifier.dart';
@@ -61,7 +62,7 @@ class _DebtDetailPageState extends ConsumerState<DebtDetailPage> {
     final paidAmount = debt.amount - state.remainingAmount;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Borç Detayı')),
+      appBar: const CommonAppBar(title: 'Borç Detayı'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
 import '../../projects/domain/project.dart';
@@ -34,8 +35,8 @@ class _EmployerDetailPageState extends ConsumerState<EmployerDetailPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(employer?.name ?? 'İşveren Detay'),
+        appBar: CommonAppBar(
+          title: employer?.name ?? 'İşveren Detayı',
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Projeler'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../application/project_notifier.dart';
 import 'tabs/debt_tab.dart';
 import 'tabs/finance_tab.dart';
@@ -36,8 +37,8 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(project?.title ?? 'Proje Detay'),
+        appBar: CommonAppBar(
+          title: project?.title ?? 'Proje Detayı',
           bottom: const TabBar(
             isScrollable: true,
             tabs: [

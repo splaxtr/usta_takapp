@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../../finance/presentation/add_transaction_modal.dart';
 import '../../debts/domain/debt.dart';
 import '../../projects/domain/project.dart';
@@ -14,8 +15,8 @@ class DashboardPage extends ConsumerWidget {
     final state = ref.watch(dashboardProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
+      appBar: CommonAppBar(
+        title: 'Dashboard',
         actions: [
           PopupMenuButton<String>(
             onSelected: (route) {

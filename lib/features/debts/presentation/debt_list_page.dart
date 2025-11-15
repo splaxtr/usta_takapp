@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/common_app_bar.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/debt_notifier.dart';
@@ -36,7 +37,7 @@ class _DebtListPageState extends ConsumerState<DebtListPage> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Borçlar')),
+      appBar: const CommonAppBar(title: 'Borçlar'),
       body: Column(
         children: [
           Padding(
