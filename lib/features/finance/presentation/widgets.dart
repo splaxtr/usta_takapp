@@ -61,7 +61,11 @@ class TransactionTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            child: Text(model.category.characters.first.toUpperCase()),
+            child: Text(
+              model.category.isNotEmpty
+                  ? model.category.substring(0, 1).toUpperCase()
+                  : '?',
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

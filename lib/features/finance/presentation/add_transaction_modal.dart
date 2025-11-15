@@ -126,6 +126,7 @@ class _AddTransactionModalState extends ConsumerState<AddTransactionModal> {
               controller: amountController,
               decoration: const InputDecoration(labelText: 'Tutar (₺)'),
               keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 12),
             TextField(

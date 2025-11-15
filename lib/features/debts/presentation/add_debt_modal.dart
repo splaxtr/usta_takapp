@@ -78,6 +78,7 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
               controller: amountController,
               decoration: const InputDecoration(labelText: 'Tutar (₺)'),
               keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 12),
             TextField(

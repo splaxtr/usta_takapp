@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../application/debt_notifier.dart';
-import '../domain/debt_payment.dart';
+import '../application/worker_notifier.dart';
+import '../domain/payment.dart';
 
-class AddDebtPaymentModal extends ConsumerStatefulWidget {
-  const AddDebtPaymentModal({super.key, required this.debtId});
+class AddWorkerPaymentModal extends ConsumerStatefulWidget {
+  const AddWorkerPaymentModal({super.key, required this.workerId});
 
-  final int debtId;
+  final int workerId;
 
   @override
-  ConsumerState<AddDebtPaymentModal> createState() =>
-      _AddDebtPaymentModalState();
+  ConsumerState<AddWorkerPaymentModal> createState() =>
+      _AddWorkerPaymentModalState();
 }
 
-class _AddDebtPaymentModalState extends ConsumerState<AddDebtPaymentModal> {
+class _AddWorkerPaymentModalState extends ConsumerState<AddWorkerPaymentModal> {
   final amountController = TextEditingController();
   final noteController = TextEditingController();
+  String method = 'Nakit';
   DateTime paymentDate = DateTime.now();
 
   @override
@@ -37,10 +38,7 @@ class _AddDebtPaymentModalState extends ConsumerState<AddDebtPaymentModal> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Kısmi Ödeme', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
           TextField(
             controller: amountController,
             decoration: const InputDecoration(labelText: 'Tutar (₺)'),
@@ -48,9 +46,19 @@ class _AddDebtPaymentModalState extends ConsumerState<AddDebtPaymentModal> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: method,
+            decoration: const InputDecoration(labelText: 'Ödeme Yöntemi'),
+            items: const [
+              DropdownMenuItem(value: 'Nakit', child: Text('Nakit')),
+              DropdownMenuItem(value: 'Havale', child: Text('Havale')),
+            ],
+            onChanged: (value) => setState(() => method = value ?? 'Nakit'),
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: noteController,
-            decoration: const InputDecoration(labelText: 'Not (opsiyonel)'),
+            decoration: const InputDecoration(labelText: 'Not'),
           ),
           const SizedBox(height: 12),
           TextButton(
@@ -75,23 +83,24 @@ class _AddDebtPaymentModalState extends ConsumerState<AddDebtPaymentModal> {
             child: ElevatedButton(
               onPressed: amountController.text.isEmpty
                   ? null
-                  : () {
+                  : () async {
                       final amount =
                           (double.tryParse(
                                 amountController.text.replaceAll(',', '.'),
                               ) ??
                               0) *
                           100;
-                      ref
-                          .read(debtNotifierProvider.notifier)
-                          .addPayment(
-                            DebtPayment(
-                              debtId: widget.debtId,
-                              amount: amount.toInt(),
-                              paymentDate: paymentDate,
-                              note: noteController.text,
-                            ),
-                          );
+                      final payment = PaymentModel(
+                        workerId: widget.workerId,
+                        projectId: null,
+                        amount: amount.toInt(),
+                        paymentDate: paymentDate,
+                        method: method,
+                        note: noteController.text,
+                      );
+                      await ref
+                          .read(workerNotifierProvider.notifier)
+                          .addPayment(payment);
                       Navigator.pop(context);
                     },
               child: const Text('Kaydet'),

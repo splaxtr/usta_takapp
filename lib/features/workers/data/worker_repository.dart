@@ -1,39 +1,27 @@
 import 'package:drift/drift.dart';
-import 'package:usta_takapp/core/database/app_database.dart' as db;
+
+import '../../../core/database/app_database.dart' as db;
 import '../domain/payment.dart';
 import '../domain/worker.dart';
 import '../domain/worker_assignment.dart';
 
-class WorkerMapper {
-  static WorkerModel toDomain(db.Worker row) => WorkerModel(
-        id: row.id,
-        fullName: row.fullName,
-        dailyRate: row.dailyRate,
-        phone: row.phone,
-        note: row.note,
-        active: row.active,
-      );
+class WorkerRepository {
+  WorkerRepository(this._db) : _dao = _db.workerDao;
 
-  static db.WorkersCompanion toInsert(WorkerModel model) => db.WorkersCompanion(
-        fullName: Value(model.fullName),
-        dailyRate: Value(model.dailyRate),
-        phone: Value(model.phone),
-        note: Value(model.note),
-        active: Value(model.active),
-      );
+  final db.AppDatabase _db;
+  final db.WorkerDao _dao;
 
-  static db.WorkersCompanion toUpdate(WorkerModel model) => db.WorkersCompanion(
-        id: Value(model.id!),
-        fullName: Value(model.fullName),
-        dailyRate: Value(model.dailyRate),
-        phone: Value(model.phone),
-        note: Value(model.note),
-        active: Value(model.active),
-      );
-}
+  WorkerModel _mapWorker(db.Worker row) => WorkerModel(
+    id: row.id,
+    fullName: row.fullName,
+    dailyRate: row.dailyRate,
+    phone: row.phone,
+    note: row.note,
+    active: row.active,
+  );
 
-class WorkerAssignmentMapper {
-  static WorkerAssignmentModel toDomain(db.WorkerAssignment row) => WorkerAssignmentModel(
+  WorkerAssignmentModel _mapAssignment(db.WorkerAssignment row) =>
+      WorkerAssignmentModel(
         id: row.id,
         workerId: row.workerId,
         projectId: row.projectId,
@@ -42,70 +30,172 @@ class WorkerAssignmentMapper {
         overtimeHours: row.overtimeHours,
       );
 
-  static db.WorkerAssignmentsCompanion toInsert(WorkerAssignmentModel model) => db.WorkerAssignmentsCompanion(
-        workerId: Value(model.workerId),
-        projectId: Value(model.projectId),
-        workDate: Value(model.workDate),
-        hours: Value(model.hours),
-        overtimeHours: Value(model.overtimeHours),
-      );
-}
-
-class PaymentMapper {
-  static PaymentModel toDomain(db.Payment row) => PaymentModel(
-        id: row.id,
-        workerId: row.workerId,
-        projectId: row.projectId,
-        amount: row.amount,
-        paymentDate: row.paymentDate,
-        method: row.method,
-        note: row.note,
-      );
-
-  static db.PaymentsCompanion toInsert(PaymentModel model) => db.PaymentsCompanion(
-        workerId: Value(model.workerId),
-        projectId: Value(model.projectId),
-        amount: Value(model.amount),
-        paymentDate: Value(model.paymentDate),
-        method: Value(model.method),
-        note: Value(model.note),
-      );
-}
-
-class WorkerRepository {
-  final db.WorkerDao _dao;
-  WorkerRepository(this._dao);
+  PaymentModel _mapPayment(db.Payment row) => PaymentModel(
+    id: row.id,
+    workerId: row.workerId,
+    projectId: row.projectId,
+    amount: row.amount,
+    paymentDate: row.paymentDate,
+    method: row.method,
+    note: row.note,
+  );
 
   Future<List<WorkerModel>> fetchAll() async {
     final rows = await _dao.fetchWorkers();
-    return rows.map(WorkerMapper.toDomain).toList();
+    return rows.map(_mapWorker).toList();
+  }
+
+  Future<List<WorkerModel>> fetchActive() async {
+    final rows = await (_db.select(
+      _db.workers,
+    )..where((tbl) => tbl.active.equals(true))).get();
+    return rows.map(_mapWorker).toList();
   }
 
   Future<WorkerModel?> fetchById(int id) async {
     final row = await _dao.fetchById(id);
-    return row == null ? null : WorkerMapper.toDomain(row);
+    return row == null ? null : _mapWorker(row);
   }
 
-  Future<int> insert(WorkerModel model) => _dao.insertWorker(WorkerMapper.toInsert(model));
-
-  Future<bool> update(WorkerModel model) {
-    if (model.id == null) return Future.value(false);
-    return _dao.updateWorker(WorkerMapper.toUpdate(model));
+  Future<int> insertWorker(WorkerModel worker) {
+    return _dao.insertWorker(
+      db.WorkersCompanion(
+        fullName: Value(worker.fullName),
+        dailyRate: Value(worker.dailyRate),
+        phone: Value(worker.phone),
+        note: Value(worker.note),
+        active: Value(worker.active),
+      ),
+    );
   }
 
-  Future<int> delete(int id) => _dao.deleteWorker(id);
-
-  Future<List<WorkerAssignmentModel>> assignmentsByProject(int projectId) async {
-    final rows = await _dao.assignmentsForProject(projectId);
-    return rows.map(WorkerAssignmentMapper.toDomain).toList();
+  Future<bool> updateWorker(WorkerModel worker) {
+    if (worker.id == null) return Future.value(false);
+    return _dao.updateWorker(
+      db.WorkersCompanion(
+        id: Value(worker.id!),
+        fullName: Value(worker.fullName),
+        dailyRate: Value(worker.dailyRate),
+        phone: Value(worker.phone),
+        note: Value(worker.note),
+        active: Value(worker.active),
+      ),
+    );
   }
 
-  Future<int> addAssignment(WorkerAssignmentModel model) => _dao.insertAssignment(WorkerAssignmentMapper.toInsert(model));
-
-  Future<List<PaymentModel>> paymentsByWorker(int workerId) async {
-    final rows = await _dao.paymentsForWorker(workerId);
-    return rows.map(PaymentMapper.toDomain).toList();
+  Future<void> deactivateWorker(int id) {
+    return (_db.update(_db.workers)..where((tbl) => tbl.id.equals(id))).write(
+      const db.WorkersCompanion(active: Value(false)),
+    );
   }
 
-  Future<int> addPayment(PaymentModel model) => _dao.insertPayment(PaymentMapper.toInsert(model));
+  Future<List<WorkerAssignmentModel>> getAssignmentsForWorker(
+    int workerId,
+  ) async {
+    final rows =
+        await (_db.select(_db.workerAssignments)
+              ..where((tbl) => tbl.workerId.equals(workerId))
+              ..orderBy([
+                (tbl) => OrderingTerm(
+                  expression: tbl.workDate,
+                  mode: OrderingMode.desc,
+                ),
+              ]))
+            .get();
+    return rows.map(_mapAssignment).toList();
+  }
+
+  Future<int> insertAssignment(WorkerAssignmentModel assignment) {
+    return _db
+        .into(_db.workerAssignments)
+        .insert(
+          db.WorkerAssignmentsCompanion(
+            workerId: Value(assignment.workerId),
+            projectId: Value(assignment.projectId),
+            workDate: Value(assignment.workDate),
+            hours: Value(assignment.hours),
+            overtimeHours: Value(assignment.overtimeHours ?? 0),
+          ),
+        );
+  }
+
+  Future<int> deleteAssignment(int id) {
+    return (_db.delete(
+      _db.workerAssignments,
+    )..where((tbl) => tbl.id.equals(id))).go();
+  }
+
+  Future<List<PaymentModel>> getPaymentsForWorker(int workerId) async {
+    final rows =
+        await (_db.select(_db.payments)
+              ..where((tbl) => tbl.workerId.equals(workerId))
+              ..orderBy([
+                (tbl) => OrderingTerm(
+                  expression: tbl.paymentDate,
+                  mode: OrderingMode.desc,
+                ),
+              ]))
+            .get();
+    return rows.map(_mapPayment).toList();
+  }
+
+  Future<int> insertPayment(PaymentModel payment) {
+    return _db
+        .into(_db.payments)
+        .insert(
+          db.PaymentsCompanion(
+            workerId: Value(payment.workerId),
+            projectId: Value(payment.projectId),
+            amount: Value(payment.amount),
+            paymentDate: Value(payment.paymentDate),
+            method: Value(payment.method),
+            note: Value(payment.note),
+          ),
+        );
+  }
+
+  Future<int> getTotalWorkedDays(int workerId) async {
+    final row = await _db
+        .customSelect(
+          'SELECT COALESCE(SUM(hours), 0) AS total FROM worker_assignments WHERE worker_id = ?1',
+          variables: [Variable<int>(workerId)],
+          readsFrom: {_db.workerAssignments},
+        )
+        .getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> getTotalWorkedAmount(int workerId) async {
+    final row = await _db
+        .customSelect(
+          '''
+      SELECT COALESCE(SUM(wa.hours * w.daily_rate), 0) AS total
+      FROM worker_assignments wa
+      INNER JOIN workers w ON w.id = wa.worker_id
+      WHERE wa.worker_id = ?1
+      ''',
+          variables: [Variable<int>(workerId)],
+          readsFrom: {_db.workerAssignments, _db.workers},
+        )
+        .getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> getTotalPaidAmount(int workerId) async {
+    final row = await _db
+        .customSelect(
+          'SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE worker_id = ?1',
+          variables: [Variable<int>(workerId)],
+          readsFrom: {_db.payments},
+        )
+        .getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> getRemainingAmount(int workerId) async {
+    final worked = await getTotalWorkedAmount(workerId);
+    final paid = await getTotalPaidAmount(workerId);
+    final remaining = worked - paid;
+    return remaining < 0 ? 0 : remaining;
+  }
 }

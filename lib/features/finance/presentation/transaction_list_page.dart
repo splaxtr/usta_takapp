@@ -148,20 +148,18 @@ class _TransactionListPageState extends ConsumerState<TransactionListPage> {
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (_, index) {
                     final tx = financeState.transactions[index];
-                    final employerName = employerState.employers
-                        .firstWhere(
-                          (e) => e.id == tx.employerId,
-                          orElse: () => employerState.employers.isNotEmpty
-                              ? employerState.employers.first
-                              : null,
-                        )
-                        ?.name;
-                    final projectName = projectState.projects
-                        .firstWhere(
-                          (p) => p.id == tx.projectId,
-                          orElse: () => null,
-                        )
-                        ?.title;
+                    final employerMatches = employerState.employers
+                        .where((e) => e.id == tx.employerId)
+                        .toList();
+                    final employerName = employerMatches.isNotEmpty
+                        ? employerMatches.first.name
+                        : null;
+                    final projectMatches = projectState.projects
+                        .where((p) => p.id == tx.projectId)
+                        .toList();
+                    final projectName = projectMatches.isNotEmpty
+                        ? projectMatches.first.title
+                        : null;
                     return TransactionTile(
                       model: tx,
                       employerName: employerName,

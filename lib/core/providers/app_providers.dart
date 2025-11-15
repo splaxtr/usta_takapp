@@ -37,7 +37,7 @@ final debtRepositoryProvider = Provider<DebtRepository>((ref) {
 
 final workerRepositoryProvider = Provider<WorkerRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return WorkerRepository(db.workerDao);
+  return WorkerRepository(db);
 });
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
