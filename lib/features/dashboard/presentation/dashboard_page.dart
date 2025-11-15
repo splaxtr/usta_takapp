@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../../finance/presentation/add_transaction_modal.dart';
 import '../../debts/domain/debt.dart';
@@ -39,98 +40,103 @@ class DashboardPage extends ConsumerWidget {
       body: state.loading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+              ? Center(child: Text(state.error!))
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        StatCard(
-                          title: 'Toplam Gelir',
-                          amount: state.totalIncome,
-                          color: Colors.green,
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            StatCard(
+                              title: 'Toplam Gelir',
+                              amount: state.totalIncome,
+                              color: Colors.green,
+                            ),
+                            StatCard(
+                              title: 'Toplam Gider',
+                              amount: state.totalExpense,
+                              color: Colors.red,
+                            ),
+                            StatCard(
+                              title: 'Net Bakiye',
+                              amount: state.totalIncome - state.totalExpense,
+                              color: Colors.blue,
+                            ),
+                            StatCard(
+                              title: 'Toplam Borç',
+                              amount: state.totalDebt,
+                              color: Colors.orange,
+                            ),
+                          ],
                         ),
-                        StatCard(
-                          title: 'Toplam Gider',
-                          amount: state.totalExpense,
-                          color: Colors.red,
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Aktif Projeler',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        StatCard(
-                          title: 'Net Bakiye',
-                          amount: state.totalIncome - state.totalExpense,
-                          color: Colors.blue,
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 140,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (_, index) {
+                              final project = state.activeProjects[index];
+                              return ProjectMiniCard(
+                                project: project,
+                                onTap: project.id == null
+                                    ? null
+                                    : () => Navigator.pushNamed(
+                                          context,
+                                          '/project/detail',
+                                          arguments: ProjectDetailArgs(
+                                            projectId: project.id!,
+                                          ),
+                                        ),
+                              );
+                            },
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 12),
+                            itemCount: state.activeProjects.length,
+                          ),
                         ),
-                        StatCard(
-                          title: 'Toplam Borç',
-                          amount: state.totalDebt,
-                          color: Colors.orange,
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Yaklaşan Vadeler',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Column(
+                          children: state.upcomingDebts
+                              .map(
+                                (d) => UpcomingDebtTile(
+                                  debt: d,
+                                  onTap: d.id == null
+                                      ? null
+                                      : () => Navigator.pushNamed(
+                                            context,
+                                            '/debt/detail',
+                                            arguments: DebtDetailArgs(
+                                              debtId: d.id!,
+                                            ),
+                                          ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Aktif Projeler',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 140,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (_, index) {
-                          final project = state.activeProjects[index];
-                          return ProjectMiniCard(
-                            project: project,
-                            onTap: project.id == null
-                                ? null
-                                : () => Navigator.pushNamed(
-                                    context,
-                                    '/project/detail',
-                                    arguments: project.id,
-                                  ),
-                          );
-                        },
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemCount: state.activeProjects.length,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Yaklaşan Vadeler',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Column(
-                      children: state.upcomingDebts
-                          .map(
-                            (d) => UpcomingDebtTile(
-                              debt: d,
-                              onTap: d.id == null
-                                  ? null
-                                  : () => Navigator.pushNamed(
-                                      context,
-                                      '/debt/detail',
-                                      arguments: d.id,
-                                    ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
@@ -260,9 +266,8 @@ class UpcomingDebtTile extends StatelessWidget {
               ),
               Chip(
                 label: Text('$remainingDays gün'),
-                backgroundColor: remainingDays <= 2
-                    ? Colors.redAccent
-                    : Colors.orangeAccent,
+                backgroundColor:
+                    remainingDays <= 2 ? Colors.redAccent : Colors.orangeAccent,
               ),
             ],
           ),

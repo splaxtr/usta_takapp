@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../../core/widgets/section_scaffold.dart';
+import '../../debts/domain/debt.dart';
+import '../../projects/domain/project.dart';
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
-import '../../projects/domain/project.dart';
-import '../../debts/domain/debt.dart';
 import 'widgets.dart';
 
 class EmployerDetailPage extends ConsumerStatefulWidget {
-  const EmployerDetailPage({super.key, required this.employerId});
+  const EmployerDetailPage({super.key, required this.args});
 
-  final int employerId;
+  final EmployerDetailArgs args;
 
   @override
   ConsumerState<EmployerDetailPage> createState() => _EmployerDetailPageState();
@@ -25,7 +26,7 @@ class _EmployerDetailPageState extends ConsumerState<EmployerDetailPage> {
     Future.microtask(
       () => ref
           .read(employerNotifierProvider.notifier)
-          .loadEmployerDetail(widget.employerId),
+          .loadEmployerDetail(widget.args.employerId),
     );
   }
 
@@ -38,33 +39,33 @@ class _EmployerDetailPageState extends ConsumerState<EmployerDetailPage> {
       body: state.loading && employer == null
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
-          : Column(
-              children: [
-                if (employer != null)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: EmployerHeaderCard(
-                      employer: employer,
-                      totalDebt: state.totalDebt,
+              ? Center(child: Text(state.error!))
+              : Column(
+                  children: [
+                    if (employer != null)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: EmployerHeaderCard(
+                          employer: employer,
+                          totalDebt: state.totalDebt,
+                        ),
+                      ),
+                    Expanded(
+                      child: SectionScaffold(
+                        tabs: const [
+                          Tab(text: 'Projeler'),
+                          Tab(text: 'Borçlar'),
+                          Tab(text: 'İletişim'),
+                        ],
+                        children: [
+                          EmployerProjectsSection(projects: state.projects),
+                          EmployerDebtsSection(debts: state.debts),
+                          EmployerContactSection(employer: employer),
+                        ],
+                      ),
                     ),
-                  ),
-                Expanded(
-                  child: SectionScaffold(
-                    tabs: const [
-                      Tab(text: 'Projeler'),
-                      Tab(text: 'Borçlar'),
-                      Tab(text: 'İletişim'),
-                    ],
-                    children: [
-                      EmployerProjectsSection(projects: state.projects),
-                      EmployerDebtsSection(debts: state.debts),
-                      EmployerContactSection(employer: employer),
-                    ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 }
@@ -93,10 +94,12 @@ class EmployerProjectsSection extends StatelessWidget {
                     onTap: project.id == null
                         ? null
                         : () => Navigator.pushNamed(
-                            context,
-                            '/project/detail',
-                            arguments: project.id,
-                          ),
+                              context,
+                              '/project/detail',
+                              arguments: ProjectDetailArgs(
+                                projectId: project.id!,
+                              ),
+                            ),
                   ),
                 ),
               ),
@@ -132,10 +135,12 @@ class EmployerDebtsSection extends StatelessWidget {
                     onTap: debt.id == null
                         ? null
                         : () => Navigator.pushNamed(
-                            context,
-                            '/debt/detail',
-                            arguments: debt.id,
-                          ),
+                              context,
+                              '/debt/detail',
+                              arguments: DebtDetailArgs(
+                                debtId: debt.id!,
+                              ),
+                            ),
                   ),
                 ),
               ),

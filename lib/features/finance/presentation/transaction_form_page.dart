@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../employers/application/employer_notifier.dart';
@@ -10,9 +11,9 @@ import '../application/transaction_form_state.dart';
 import 'finance_categories.dart';
 
 class TransactionFormPage extends ConsumerStatefulWidget {
-  final int? transactionId;
+  final TransactionFormArgs? args;
 
-  const TransactionFormPage({super.key, this.transactionId});
+  const TransactionFormPage({super.key, this.args});
 
   @override
   ConsumerState<TransactionFormPage> createState() =>
@@ -23,7 +24,7 @@ class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   ProviderListenable<TransactionFormState> get _provider =>
-      transactionFormNotifierProvider(widget.transactionId);
+      transactionFormNotifierProvider(widget.args?.transactionId);
 
   Future<void> _pickDate(
       TransactionFormNotifier notifier, DateTime initial) async {

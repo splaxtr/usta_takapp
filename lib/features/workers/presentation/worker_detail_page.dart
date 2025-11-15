@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../../core/widgets/section_scaffold.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/worker_notifier.dart';
 import '../application/worker_state.dart';
-import '../domain/worker_assignment.dart';
 import '../domain/payment.dart';
+import '../domain/worker_assignment.dart';
 import 'add_workday_modal.dart';
 import 'worker_widgets.dart';
 
 class WorkerDetailPage extends ConsumerStatefulWidget {
-  const WorkerDetailPage({super.key, required this.workerId});
+  const WorkerDetailPage({super.key, required this.args});
 
-  final int workerId;
+  final WorkerDetailArgs args;
 
   @override
   ConsumerState<WorkerDetailPage> createState() => _WorkerDetailPageState();
@@ -27,7 +28,7 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
     Future.microtask(
       () => ref
           .read(workerNotifierProvider.notifier)
-          .loadWorkerDetail(widget.workerId),
+          .loadWorkerDetail(widget.args.workerId),
     );
   }
 
@@ -216,7 +217,7 @@ class WorkerPaymentsSection extends StatelessWidget {
                 Navigator.pushNamed(
                   context,
                   '/payment/form',
-                  arguments: {'workerId': workerId},
+                  arguments: PaymentFormArgs(workerId: workerId),
                 );
               },
               icon: const Icon(Icons.payments),

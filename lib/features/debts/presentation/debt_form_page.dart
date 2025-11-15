@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../employers/application/employer_notifier.dart';
@@ -9,9 +10,9 @@ import '../application/debt_form_notifier.dart';
 import '../application/debt_form_state.dart';
 
 class DebtFormPage extends ConsumerStatefulWidget {
-  final int? debtId;
+  final DebtFormArgs? args;
 
-  const DebtFormPage({super.key, this.debtId});
+  const DebtFormPage({super.key, this.args});
 
   @override
   ConsumerState<DebtFormPage> createState() => _DebtFormPageState();
@@ -21,7 +22,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   ProviderListenable<DebtFormState> get _provider =>
-      debtFormNotifierProvider(widget.debtId);
+      debtFormNotifierProvider(widget.args?.debtId);
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;

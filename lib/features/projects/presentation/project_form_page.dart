@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/validation/validators.dart';
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../application/project_form_notifier.dart';
 import '../application/project_form_state.dart';
 
 class ProjectFormPage extends ConsumerStatefulWidget {
-  final int? projectId;
+  final ProjectFormArgs? args;
 
-  const ProjectFormPage({super.key, this.projectId});
+  const ProjectFormPage({super.key, this.args});
 
   @override
   ConsumerState<ProjectFormPage> createState() => _ProjectFormPageState();
@@ -20,7 +21,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   ProviderListenable<ProjectFormState> get _provider =>
-      projectFormNotifierProvider(widget.projectId);
+      projectFormNotifierProvider(widget.args?.projectId);
 
   Future<void> _pickDate({
     required DateTime initial,

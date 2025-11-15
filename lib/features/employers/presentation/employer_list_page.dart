@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
@@ -68,7 +69,9 @@ class _EmployerListPageState extends ConsumerState<EmployerListPage> {
                         Navigator.pushNamed(
                           context,
                           '/employer/detail',
-                          arguments: employer.id,
+                          arguments: EmployerDetailArgs(
+                            employerId: employer.id!,
+                          ),
                         );
                       },
                     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/app_card.dart';
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/project_notifier.dart';
 import '../domain/project.dart';
@@ -37,10 +38,11 @@ class ProjectListPage extends ConsumerWidget {
                       summary: summary,
                       onTap: () {
                         if (project.id == null) return;
+                        if (project.id == null) return;
                         Navigator.pushNamed(
                           context,
                           '/project/detail',
-                          arguments: project.id,
+                          arguments: ProjectDetailArgs(projectId: project.id!),
                         );
                       },
                     );

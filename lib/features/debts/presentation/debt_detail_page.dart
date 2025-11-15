@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
@@ -10,9 +11,9 @@ import 'add_debt_payment_modal.dart';
 import 'widgets.dart';
 
 class DebtDetailPage extends ConsumerStatefulWidget {
-  const DebtDetailPage({super.key, required this.debtId});
+  const DebtDetailPage({super.key, required this.args});
 
-  final int debtId;
+  final DebtDetailArgs args;
 
   @override
   ConsumerState<DebtDetailPage> createState() => _DebtDetailPageState();
@@ -23,8 +24,9 @@ class _DebtDetailPageState extends ConsumerState<DebtDetailPage> {
   void initState() {
     super.initState();
     Future.microtask(
-      () =>
-          ref.read(debtNotifierProvider.notifier).loadDebtDetail(widget.debtId),
+      () => ref
+          .read(debtNotifierProvider.notifier)
+          .loadDebtDetail(widget.args.debtId),
     );
   }
 
@@ -47,18 +49,14 @@ class _DebtDetailPageState extends ConsumerState<DebtDetailPage> {
       return const Scaffold(body: Center(child: Text('Borç bulunamadı')));
     }
 
-    final employerMatch = employerState.employers
-        .where((e) => e.id == debt.employerId)
-        .toList();
-    final employerName = employerMatch.isNotEmpty
-        ? employerMatch.first.name
-        : 'İşveren';
-    final projectMatch = projectState.projects
-        .where((p) => p.id == debt.projectId)
-        .toList();
-    final projectName = projectMatch.isNotEmpty
-        ? projectMatch.first.title
-        : null;
+    final employerMatch =
+        employerState.employers.where((e) => e.id == debt.employerId).toList();
+    final employerName =
+        employerMatch.isNotEmpty ? employerMatch.first.name : 'İşveren';
+    final projectMatch =
+        projectState.projects.where((p) => p.id == debt.projectId).toList();
+    final projectName =
+        projectMatch.isNotEmpty ? projectMatch.first.title : null;
     final paidAmount = debt.amount - state.remainingAmount;
 
     return Scaffold(
@@ -106,8 +104,8 @@ class _DebtDetailPageState extends ConsumerState<DebtDetailPage> {
                     child: ElevatedButton(
                       onPressed: state.remainingAmount == 0
                           ? () => ref
-                                .read(debtNotifierProvider.notifier)
-                                .closeDebtIfFullyPaid(debt.id!)
+                              .read(debtNotifierProvider.notifier)
+                              .closeDebtIfFullyPaid(debt.id!)
                           : null,
                       child: const Text('Borcu Kapat'),
                     ),

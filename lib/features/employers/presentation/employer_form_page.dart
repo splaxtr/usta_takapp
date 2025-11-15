@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../application/employer_form_notifier.dart';
 import '../application/employer_form_state.dart';
 
 class EmployerFormPage extends ConsumerStatefulWidget {
-  final int? employerId;
+  final EmployerFormArgs? args;
 
-  const EmployerFormPage({super.key, this.employerId});
+  const EmployerFormPage({super.key, this.args});
 
   @override
   ConsumerState<EmployerFormPage> createState() => _EmployerFormPageState();
@@ -19,7 +20,7 @@ class _EmployerFormPageState extends ConsumerState<EmployerFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   ProviderListenable<EmployerFormState> get _provider =>
-      employerFormNotifierProvider(widget.employerId);
+      employerFormNotifierProvider(widget.args?.employerId);
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;

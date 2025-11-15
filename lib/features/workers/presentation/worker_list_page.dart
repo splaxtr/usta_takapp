@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/worker_notifier.dart';
 import '../domain/worker.dart';
@@ -96,7 +97,7 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
                         Navigator.pushNamed(
                           context,
                           '/worker/detail',
-                          arguments: worker.id,
+                          arguments: WorkerDetailArgs(workerId: worker.id!),
                         );
                       },
                     );

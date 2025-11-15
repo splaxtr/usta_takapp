@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../../../core/router/route_args.dart';
 import '../../projects/application/project_notifier.dart';
 import '../data/worker_repository.dart';
 import '../domain/payment.dart';
@@ -13,13 +14,6 @@ final paymentFormNotifierProvider = StateNotifierProvider.autoDispose
   final repo = ref.read(workerRepositoryProvider);
   return PaymentFormNotifier(ref, repo, args);
 });
-
-class PaymentFormArgs {
-  final int? workerId;
-  final int? projectId;
-
-  const PaymentFormArgs({this.workerId, this.projectId});
-}
 
 class PaymentFormNotifier extends StateNotifier<PaymentFormState> {
   PaymentFormNotifier(this._ref, this._repo, PaymentFormArgs args)

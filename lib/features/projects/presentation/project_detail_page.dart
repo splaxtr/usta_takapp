@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../../../core/widgets/section_scaffold.dart';
 import '../application/project_notifier.dart';
@@ -11,9 +12,9 @@ import 'tabs/summary_tab.dart';
 import 'tabs/workers_tab.dart';
 
 class ProjectDetailPage extends ConsumerStatefulWidget {
-  const ProjectDetailPage({super.key, required this.projectId});
+  const ProjectDetailPage({super.key, required this.args});
 
-  final int projectId;
+  final ProjectDetailArgs args;
 
   @override
   ConsumerState<ProjectDetailPage> createState() => _ProjectDetailPageState();
@@ -26,7 +27,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     Future.microtask(
       () => ref
           .read(projectNotifierProvider.notifier)
-          .loadProjectDetail(widget.projectId),
+          .loadProjectDetail(widget.args.projectId),
     );
   }
 
@@ -40,35 +41,35 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
       body: state.loading && project == null
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
-          : Column(
-              children: [
-                ProjectHeader(
-                  projectName: project?.title ?? '',
-                  status: project?.status ?? '-',
-                  employerId: project?.employerId ?? 0,
+              ? Center(child: Text(state.error!))
+              : Column(
+                  children: [
+                    ProjectHeader(
+                      projectName: project?.title ?? '',
+                      status: project?.status ?? '-',
+                      employerId: project?.employerId ?? 0,
+                    ),
+                    const Divider(height: 1),
+                    Expanded(
+                      child: SectionScaffold(
+                        tabs: const [
+                          Tab(text: 'Özet'),
+                          Tab(text: 'Çalışanlar'),
+                          Tab(text: 'Finans'),
+                          Tab(text: 'Borçlar'),
+                          Tab(text: 'Ödemeler'),
+                        ],
+                        children: [
+                          ProjectSummaryTab(projectId: widget.args.projectId),
+                          ProjectWorkersTab(projectId: widget.args.projectId),
+                          ProjectFinanceTab(projectId: widget.args.projectId),
+                          ProjectDebtTab(projectId: widget.args.projectId),
+                          ProjectPaymentsTab(projectId: widget.args.projectId),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const Divider(height: 1),
-                Expanded(
-                  child: SectionScaffold(
-                    tabs: const [
-                      Tab(text: 'Özet'),
-                      Tab(text: 'Çalışanlar'),
-                      Tab(text: 'Finans'),
-                      Tab(text: 'Borçlar'),
-                      Tab(text: 'Ödemeler'),
-                    ],
-                    children: [
-                      ProjectSummaryTab(projectId: widget.projectId),
-                      ProjectWorkersTab(projectId: widget.projectId),
-                      ProjectFinanceTab(projectId: widget.projectId),
-                      ProjectDebtTab(projectId: widget.projectId),
-                      ProjectPaymentsTab(projectId: widget.projectId),
-                    ],
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }

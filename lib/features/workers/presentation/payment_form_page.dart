@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/route_args.dart';
 import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../../projects/application/project_notifier.dart';
@@ -9,10 +10,9 @@ import '../application/payment_form_state.dart';
 import '../application/worker_notifier.dart';
 
 class PaymentFormPage extends ConsumerStatefulWidget {
-  final int? workerId;
-  final int? projectId;
+  final PaymentFormArgs args;
 
-  const PaymentFormPage({super.key, this.workerId, this.projectId});
+  const PaymentFormPage({super.key, required this.args});
 
   @override
   ConsumerState<PaymentFormPage> createState() => _PaymentFormPageState();
@@ -22,12 +22,7 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   late final ProviderListenable<PaymentFormState> _provider =
-      paymentFormNotifierProvider(
-    PaymentFormArgs(
-      workerId: widget.workerId,
-      projectId: widget.projectId,
-    ),
-  );
+      paymentFormNotifierProvider(widget.args);
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
