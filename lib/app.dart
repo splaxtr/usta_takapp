@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/theme/app_theme.dart';
 
 class UstaTakipApp extends StatelessWidget {
@@ -6,12 +8,14 @@ class UstaTakipApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Usta Takip',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
-      home: const Scaffold(
-        body: Center(child: Text("Usta Takip Başlangıç")),
+    return ProviderScope(
+      child: MaterialApp(
+        title: 'Usta Takip',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark(),
+        home: const Scaffold(
+          body: Center(child: Text("Usta Takip Başlangıç")),
+        ),
       ),
     );
   }
