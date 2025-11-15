@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../domain/payment.dart';
@@ -197,5 +198,10 @@ class WorkerRepository {
     final paid = await getTotalPaidAmount(workerId);
     final remaining = worked - paid;
     return remaining < 0 ? 0 : remaining;
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await _dao.fetchWorkers();
+    debugPrint('WorkerRepository OK: ${rows.length} kayıt');
   }
 }

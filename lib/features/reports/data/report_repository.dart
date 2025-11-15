@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
@@ -109,6 +110,13 @@ class ReportRepository {
       ),
     );
   }
+
+  Future<List<WeeklyReport>> fetchAllSnapshots() async {
+    final rows = await _dao.fetchAll();
+    return rows.map(_mapSnapshot).toList();
+  }
+
+  Future<int> deleteSnapshot(DateTime weekStart) => _dao.deleteWeek(weekStart);
 
   Future<WeeklyReport> getOrCreateSnapshot(
     DateTime weekStart,
@@ -228,5 +236,10 @@ class ReportRepository {
           ),
         )
         .toList();
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await _dao.fetchAll();
+    debugPrint('ReportRepository OK: ${rows.length} snapshot');
   }
 }

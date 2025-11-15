@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../domain/debt.dart';
@@ -138,5 +139,10 @@ class DebtRepository {
     return (_db.update(_db.debts)..where((tbl) => tbl.id.equals(debtId))).write(
       db.DebtsCompanion(status: Value(status)),
     );
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await _dao.fetchAll();
+    debugPrint('DebtRepository OK: ${rows.length} kayıt');
   }
 }

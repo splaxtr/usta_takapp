@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
@@ -28,7 +29,9 @@ class DashboardRepository {
   }
 
   Future<List<Project>> fetchActiveProjects() async {
-    final rows = await (_db.select(_db.projects)..where((tbl) => tbl.status.equals('active'))).get();
+    final rows = await (_db.select(
+      _db.projects,
+    )..where((tbl) => tbl.status.equals('active'))).get();
     return rows
         .map(
           (row) => Project(
@@ -56,11 +59,16 @@ class DashboardRepository {
   Future<List<Debt>> fetchUpcomingDebts() async {
     final now = DateTime.now();
     final limitDate = now.add(const Duration(days: 7));
-    final rows = await (_db.select(_db.debts)
-          ..where((tbl) => tbl.status.isIn(['pending', 'partial']) & tbl.dueDate.isBetweenValues(now, limitDate))
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)])
-          ..limit(10))
-        .get();
+    final rows =
+        await (_db.select(_db.debts)
+              ..where(
+                (tbl) =>
+                    tbl.status.isIn(['pending', 'partial']) &
+                    tbl.dueDate.isBetweenValues(now, limitDate),
+              )
+              ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)])
+              ..limit(10))
+            .get();
     return rows
         .map(
           (row) => Debt(
@@ -75,5 +83,10 @@ class DashboardRepository {
           ),
         )
         .toList();
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final active = await fetchActiveProjects();
+    debugPrint('DashboardRepository OK: ${active.length} aktif proje');
   }
 }

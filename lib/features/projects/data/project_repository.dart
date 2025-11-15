@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
@@ -228,4 +229,9 @@ class ProjectRepository {
   }
 
   Future<int> delete(int id) => _dao.deleteById(id);
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await _dao.fetchAll();
+    debugPrint('ProjectRepository OK: ${rows.length} kayıt');
+  }
 }

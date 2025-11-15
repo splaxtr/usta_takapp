@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../domain/income_expense.dart';
@@ -158,5 +159,10 @@ class FinanceRepository {
         )
         .getSingle();
     return row.read<int>('total');
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await fetchAll();
+    debugPrint('FinanceRepository OK: ${rows.length} kayıt');
   }
 }

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
@@ -113,5 +114,10 @@ class EmployerRepository {
         )
         .getSingle();
     return query.read<int>('total');
+  }
+
+  Future<void> repositorySanityCheck() async {
+    final rows = await _dao.fetchAll();
+    debugPrint('EmployerRepository OK: ${rows.length} kayıt');
   }
 }
