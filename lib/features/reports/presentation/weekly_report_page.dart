@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_filex/open_filex.dart';
 
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_tile.dart';
@@ -62,27 +63,41 @@ class WeeklyReportPage extends ConsumerWidget {
                     color: Colors.redAccent,
                   ),
                   ReportStatCard(
-                    title: 'Net',
-                    amount: state.income - state.expense,
-                    color: Colors.blueAccent,
+                    title: 'Borç',
+                    amount: state.debtTaken,
+                    color: Colors.purpleAccent,
                   ),
                   ReportStatCard(
                     title: 'Maaş',
                     amount: state.payroll,
                     color: Colors.orangeAccent,
                   ),
-                  ReportStatCard(
-                    title: 'Alınan Borç',
-                    amount: state.debtTaken,
-                    color: Colors.purpleAccent,
-                  ),
-                  ReportStatCard(
-                    title: 'Ödenen Borç',
-                    amount: state.debtPaid,
-                    color: Colors.teal,
-                  ),
                 ],
               ),
+              const SizedBox(height: 24),
+              ReportSectionTitle(title: 'Aktif Projeler'),
+              if (state.activeProjects.isEmpty)
+                const Text('Aktif proje bulunamadı')
+              else
+                ...state.activeProjects.map(
+                  (project) => AppCard(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.construction),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(project.title),
+                              Text('Durum: ${project.status}'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               const SizedBox(height: 24),
               ReportSectionTitle(title: 'İşlemler'),
               if (state.transactions.isEmpty)
@@ -112,11 +127,11 @@ class WeeklyReportPage extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: state.loading
+                      onPressed: state.loading || state.snapshot == null
                           ? null
                           : () async {
                               final path = await notifier.generatePdf();
-                              _showSnack(context, 'PDF oluşturuldu: $path');
+                              await _openFile(context, path, 'PDF');
                             },
                       icon: const Icon(Icons.picture_as_pdf),
                       label: const Text('PDF Oluştur'),
@@ -125,11 +140,11 @@ class WeeklyReportPage extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: state.loading
+                      onPressed: state.loading || state.snapshot == null
                           ? null
                           : () async {
                               final path = await notifier.generateExcel();
-                              _showSnack(context, 'Excel oluşturuldu: $path');
+                              await _openFile(context, path, 'Excel');
                             },
                       icon: const Icon(Icons.table_chart),
                       label: const Text('Excel Oluştur'),
@@ -144,10 +159,18 @@ class WeeklyReportPage extends ConsumerWidget {
     );
   }
 
-  void _showSnack(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  Future<void> _openFile(
+    BuildContext context,
+    String path,
+    String label,
+  ) async {
+    final result = await OpenFilex.open(path);
+    final message = result.message?.isNotEmpty == true
+        ? result.message
+        : '$label hazır: $path';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
 

@@ -1,80 +1,82 @@
 import '../../debts/domain/debt.dart';
 import '../../debts/domain/debt_payment.dart';
 import '../../finance/domain/income_expense.dart';
+import '../../projects/domain/project.dart';
 import '../../workers/domain/worker_assignment.dart';
+import '../domain/weekly_snapshot.dart';
 
 class ReportState {
   final bool loading;
-  final int income;
-  final int expense;
-  final int payroll;
-  final int debtTaken;
+  final WeeklySnapshot? snapshot;
   final int debtPaid;
   final List<IncomeExpenseModel> transactions;
   final List<WorkerAssignmentModel> assignments;
   final List<Debt> debts;
   final List<DebtPayment> debtPayments;
+  final List<Project> activeProjects;
   final DateTime weekStart;
   final DateTime weekEnd;
   final String? error;
 
+  int get income => snapshot?.incomeTotal ?? 0;
+  int get expense => snapshot?.expenseTotal ?? 0;
+  int get payroll => snapshot?.payrollTotal ?? 0;
+  int get debtTaken => snapshot?.debtTotal ?? 0;
+  int get net => income - expense;
+
   const ReportState({
     required this.loading,
-    required this.income,
-    required this.expense,
-    required this.payroll,
-    required this.debtTaken,
+    required this.snapshot,
     required this.debtPaid,
     required this.transactions,
     required this.assignments,
     required this.debts,
     required this.debtPayments,
+    required this.activeProjects,
     required this.weekStart,
     required this.weekEnd,
     this.error,
   });
 
-  factory ReportState.initial() => ReportState(
-    loading: true,
-    income: 0,
-    expense: 0,
-    payroll: 0,
-    debtTaken: 0,
-    debtPaid: 0,
-    transactions: const [],
-    assignments: const [],
-    debts: const [],
-    debtPayments: const [],
-    weekStart: _startOfWeek(DateTime.now()),
-    weekEnd: _startOfWeek(DateTime.now()).add(const Duration(days: 6)),
-  );
+  factory ReportState.initial() {
+    final start = _startOfWeek(DateTime.now());
+    return ReportState(
+      loading: true,
+      snapshot: null,
+      debtPaid: 0,
+      transactions: const [],
+      assignments: const [],
+      debts: const [],
+      debtPayments: const [],
+      activeProjects: const [],
+      weekStart: start,
+      weekEnd: start.add(const Duration(days: 6)),
+    );
+  }
 
   ReportState copyWith({
     bool? loading,
-    int? income,
-    int? expense,
-    int? payroll,
-    int? debtTaken,
+    WeeklySnapshot? snapshot,
+    bool clearSnapshot = false,
     int? debtPaid,
     List<IncomeExpenseModel>? transactions,
     List<WorkerAssignmentModel>? assignments,
     List<Debt>? debts,
     List<DebtPayment>? debtPayments,
+    List<Project>? activeProjects,
     DateTime? weekStart,
     DateTime? weekEnd,
     String? error,
   }) {
     return ReportState(
       loading: loading ?? this.loading,
-      income: income ?? this.income,
-      expense: expense ?? this.expense,
-      payroll: payroll ?? this.payroll,
-      debtTaken: debtTaken ?? this.debtTaken,
+      snapshot: clearSnapshot ? null : (snapshot ?? this.snapshot),
       debtPaid: debtPaid ?? this.debtPaid,
       transactions: transactions ?? this.transactions,
       assignments: assignments ?? this.assignments,
       debts: debts ?? this.debts,
       debtPayments: debtPayments ?? this.debtPayments,
+      activeProjects: activeProjects ?? this.activeProjects,
       weekStart: weekStart ?? this.weekStart,
       weekEnd: weekEnd ?? this.weekEnd,
       error: error,
@@ -83,10 +85,6 @@ class ReportState {
 }
 
 DateTime _startOfWeek(DateTime date) {
-  final weekday = date.weekday;
-  return DateTime(
-    date.year,
-    date.month,
-    date.day,
-  ).subtract(Duration(days: weekday - 1));
+  final startOfDay = DateTime(date.year, date.month, date.day);
+  return startOfDay.subtract(Duration(days: date.weekday - DateTime.monday));
 }

@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
 import '../../debts/domain/debt_payment.dart';
 import '../../finance/domain/income_expense.dart';
+import '../../projects/domain/project.dart';
 import '../../workers/domain/worker_assignment.dart';
-import '../domain/weekly_report.dart';
+import '../domain/weekly_snapshot.dart';
 
 class ReportRepository {
   ReportRepository(this._db) : _dao = _db.reportDao;
@@ -14,7 +14,7 @@ class ReportRepository {
   final db.AppDatabase _db;
   final db.ReportDao _dao;
 
-  WeeklyReport _mapSnapshot(db.WeeklySnapshot row) => WeeklyReport(
+  WeeklySnapshot _mapSnapshot(db.WeeklySnapshot row) => WeeklySnapshot(
         id: row.id,
         weekStart: row.weekStart,
         incomeTotal: row.incomeTotal,
@@ -24,71 +24,54 @@ class ReportRepository {
         generatedAt: row.generatedAt,
       );
 
-  Future<int> getWeeklyIncome(DateTime start, DateTime end) async {
-    final row = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
-      variables: [
-        const Variable<String>('income'),
-        Variable<DateTime>(start),
-        Variable<DateTime>(end),
-      ],
-      readsFrom: {_db.incomeExpense},
-    ).getSingle();
-    return row.read<int>('total');
+  DateTime _normalizeWeekStart(DateTime date) {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    return startOfDay.subtract(Duration(days: date.weekday - DateTime.monday));
   }
 
-  Future<int> getWeeklyExpense(DateTime start, DateTime end) async {
-    final row = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
-      variables: [
-        const Variable<String>('expense'),
-        Variable<DateTime>(start),
-        Variable<DateTime>(end),
-      ],
-      readsFrom: {_db.incomeExpense},
-    ).getSingle();
-    return row.read<int>('total');
-  }
+  DateTime _weekEnd(DateTime start) => start.add(const Duration(days: 6));
 
-  Future<int> getWeeklyPayroll(DateTime start, DateTime end) async {
-    final row = await _db.customSelect(
-      '''
-      SELECT COALESCE(SUM(wa.hours * w.daily_rate),0) AS total
-      FROM worker_assignments wa
-      INNER JOIN workers w ON w.id = wa.worker_id
-      WHERE wa.work_date BETWEEN ?1 AND ?2
-      ''',
-      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-      readsFrom: {_db.workerAssignments, _db.workers},
-    ).getSingle();
-    return row.read<int>('total');
-  }
-
-  Future<int> getWeeklyDebt(DateTime start, DateTime end) async {
-    final row = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount),0) AS total FROM debts WHERE borrow_date BETWEEN ?1 AND ?2',
-      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-      readsFrom: {_db.debts},
-    ).getSingle();
-    return row.read<int>('total');
-  }
-
-  Future<int> getWeeklyDebtPayments(DateTime start, DateTime end) async {
-    final row = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount),0) AS total FROM debt_payments WHERE payment_date BETWEEN ?1 AND ?2',
-      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-      readsFrom: {_db.debtPayments},
-    ).getSingle();
-    return row.read<int>('total');
-  }
-
-  Future<WeeklyReport?> getSnapshot(DateTime weekStart) async {
-    final row = await _dao.fetchByWeek(weekStart);
+  Future<WeeklySnapshot?> getSnapshot(DateTime weekStart) async {
+    final normalized = _normalizeWeekStart(weekStart);
+    final row = await _dao.fetchByWeek(normalized);
     return row == null ? null : _mapSnapshot(row);
   }
 
-  Future<int> insertSnapshot(WeeklyReport snapshot) async {
-    return _dao.upsertSnapshot(
+  Future<List<WeeklySnapshot>> listSnapshots() async {
+    final rows = await _dao.fetchAll();
+    return rows.map(_mapSnapshot).toList();
+  }
+
+  Future<WeeklySnapshot> calculateWeek(DateTime weekStart) async {
+    final normalized = _normalizeWeekStart(weekStart);
+    final weekEnd = _weekEnd(normalized);
+    final income = await _sumIncomeExpense('income', normalized, weekEnd);
+    final expense = await _sumIncomeExpense('expense', normalized, weekEnd);
+    final payroll = await _sumPayroll(normalized, weekEnd);
+    final outstandingDebt = await _sumOutstandingDebt();
+    return WeeklySnapshot(
+      weekStart: normalized,
+      incomeTotal: income,
+      expenseTotal: expense,
+      debtTotal: outstandingDebt,
+      payrollTotal: payroll,
+      generatedAt: DateTime.now(),
+    );
+  }
+
+  Future<WeeklySnapshot> generateSnapshot(DateTime weekStart) async {
+    final snapshot = await calculateWeek(weekStart);
+    await _dao.upsertSnapshot(_toCompanion(snapshot));
+    return snapshot;
+  }
+
+  Future<WeeklySnapshot> ensureSnapshot(DateTime weekStart) async {
+    final existing = await getSnapshot(weekStart);
+    if (existing != null) return existing;
+    return generateSnapshot(weekStart);
+  }
+
+  db.WeeklySnapshotsCompanion _toCompanion(WeeklySnapshot snapshot) =>
       db.WeeklySnapshotsCompanion(
         id: snapshot.id != null ? Value(snapshot.id!) : const Value.absent(),
         weekStart: Value(snapshot.weekStart),
@@ -97,37 +80,49 @@ class ReportRepository {
         debtTotal: Value(snapshot.debtTotal),
         payrollTotal: Value(snapshot.payrollTotal),
         generatedAt: Value(snapshot.generatedAt),
-      ),
-    );
-  }
+      );
 
-  Future<List<WeeklyReport>> fetchAllSnapshots() async {
-    final rows = await _dao.fetchAll();
-    return rows.map(_mapSnapshot).toList();
-  }
-
-  Future<int> deleteSnapshot(DateTime weekStart) => _dao.deleteWeek(weekStart);
-
-  Future<WeeklyReport> getOrCreateSnapshot(
-    DateTime weekStart,
-    DateTime weekEnd,
+  Future<int> _sumIncomeExpense(
+    String type,
+    DateTime start,
+    DateTime end,
   ) async {
-    final existing = await getSnapshot(weekStart);
-    if (existing != null) return existing;
-    final income = await getWeeklyIncome(weekStart, weekEnd);
-    final expense = await getWeeklyExpense(weekStart, weekEnd);
-    final payroll = await getWeeklyPayroll(weekStart, weekEnd);
-    final debt = await getWeeklyDebt(weekStart, weekEnd);
-    final snapshot = WeeklyReport(
-      weekStart: weekStart,
-      incomeTotal: income,
-      expenseTotal: expense,
-      debtTotal: debt,
-      payrollTotal: payroll,
-      generatedAt: DateTime.now(),
-    );
-    await insertSnapshot(snapshot);
-    return snapshot;
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
+      variables: [
+        Variable<String>(type),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> _sumPayroll(DateTime start, DateTime end) async {
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM payments WHERE payment_date BETWEEN ?1 AND ?2',
+      variables: [
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: {_db.payments},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> _sumOutstandingDebt() async {
+    final row = await _db.customSelect(
+      '''
+        SELECT COALESCE(SUM(d.amount - COALESCE((
+          SELECT SUM(dp.amount) FROM debt_payments dp WHERE dp.debt_id = d.id
+        ), 0)), 0) AS total
+        FROM debts d
+        WHERE d.status IN ('pending','partial')
+      ''',
+      readsFrom: {_db.debts, _db.debtPayments},
+    ).getSingle();
+    return row.read<int>('total');
   }
 
   Future<List<IncomeExpenseModel>> getTransactionsForWeek(
@@ -187,9 +182,8 @@ class ReportRepository {
   }
 
   Future<List<Debt>> getDebtsForWeek(DateTime start, DateTime end) async {
-    final rows = await (_db.select(
-      _db.debts,
-    )..where((tbl) => tbl.borrowDate.isBetweenValues(start, end)))
+    final rows = await (_db.select(_db.debts)
+          ..where((tbl) => tbl.borrowDate.isBetweenValues(start, end)))
         .get();
     return rows
         .map(
@@ -212,9 +206,14 @@ class ReportRepository {
     DateTime start,
     DateTime end,
   ) async {
-    final rows = await (_db.select(
-      _db.debtPayments,
-    )..where((tbl) => tbl.paymentDate.isBetweenValues(start, end)))
+    final rows = await (_db.select(_db.debtPayments)
+          ..where((tbl) => tbl.paymentDate.isBetweenValues(start, end))
+          ..orderBy([
+            (tbl) => OrderingTerm(
+                  expression: tbl.paymentDate,
+                  mode: OrderingMode.desc,
+                ),
+          ]))
         .get();
     return rows
         .map(
@@ -229,12 +228,39 @@ class ReportRepository {
         .toList();
   }
 
-  Future<void> repositorySanityCheck() async {
-    final rows = await _dao.fetchAll();
-    debugPrint('ReportRepository OK: ${rows.length} snapshot');
+  Future<int> getWeeklyDebtPayments(DateTime start, DateTime end) async {
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM debt_payments WHERE payment_date BETWEEN ?1 AND ?2',
+      variables: [
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: {_db.debtPayments},
+    ).getSingle();
+    return row.read<int>('total');
   }
 
-  void mapperSanityCheck(db.WeeklySnapshot row) {
+  Future<List<Project>> fetchActiveProjects() async {
+    final rows = await (_db.select(_db.projects)
+          ..where((tbl) => tbl.status.equals('active')))
+        .get();
+    return rows
+        .map(
+          (row) => Project(
+            id: row.id,
+            employerId: row.employerId,
+            title: row.title,
+            startDate: row.startDate,
+            endDate: row.endDate,
+            status: row.status,
+            budget: row.budget,
+            description: row.description,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> mapperSanityCheck(db.WeeklySnapshot row) async {
     _mapSnapshot(row);
   }
 }

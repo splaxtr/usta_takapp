@@ -3071,25 +3071,33 @@ class $WeeklySnapshotsTable extends WeeklySnapshots
   @override
   late final GeneratedColumn<int> incomeTotal = GeneratedColumn<int>(
       'income_total', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _expenseTotalMeta =
       const VerificationMeta('expenseTotal');
   @override
   late final GeneratedColumn<int> expenseTotal = GeneratedColumn<int>(
       'expense_total', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _debtTotalMeta =
       const VerificationMeta('debtTotal');
   @override
   late final GeneratedColumn<int> debtTotal = GeneratedColumn<int>(
       'debt_total', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _payrollTotalMeta =
       const VerificationMeta('payrollTotal');
   @override
   late final GeneratedColumn<int> payrollTotal = GeneratedColumn<int>(
       'payroll_total', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _generatedAtMeta =
       const VerificationMeta('generatedAt');
   @override
@@ -3132,30 +3140,22 @@ class $WeeklySnapshotsTable extends WeeklySnapshots
           _incomeTotalMeta,
           incomeTotal.isAcceptableOrUnknown(
               data['income_total']!, _incomeTotalMeta));
-    } else if (isInserting) {
-      context.missing(_incomeTotalMeta);
     }
     if (data.containsKey('expense_total')) {
       context.handle(
           _expenseTotalMeta,
           expenseTotal.isAcceptableOrUnknown(
               data['expense_total']!, _expenseTotalMeta));
-    } else if (isInserting) {
-      context.missing(_expenseTotalMeta);
     }
     if (data.containsKey('debt_total')) {
       context.handle(_debtTotalMeta,
           debtTotal.isAcceptableOrUnknown(data['debt_total']!, _debtTotalMeta));
-    } else if (isInserting) {
-      context.missing(_debtTotalMeta);
     }
     if (data.containsKey('payroll_total')) {
       context.handle(
           _payrollTotalMeta,
           payrollTotal.isAcceptableOrUnknown(
               data['payroll_total']!, _payrollTotalMeta));
-    } else if (isInserting) {
-      context.missing(_payrollTotalMeta);
     }
     if (data.containsKey('generated_at')) {
       context.handle(
@@ -3348,16 +3348,12 @@ class WeeklySnapshotsCompanion extends UpdateCompanion<WeeklySnapshot> {
   WeeklySnapshotsCompanion.insert({
     this.id = const Value.absent(),
     required DateTime weekStart,
-    required int incomeTotal,
-    required int expenseTotal,
-    required int debtTotal,
-    required int payrollTotal,
+    this.incomeTotal = const Value.absent(),
+    this.expenseTotal = const Value.absent(),
+    this.debtTotal = const Value.absent(),
+    this.payrollTotal = const Value.absent(),
     this.generatedAt = const Value.absent(),
-  })  : weekStart = Value(weekStart),
-        incomeTotal = Value(incomeTotal),
-        expenseTotal = Value(expenseTotal),
-        debtTotal = Value(debtTotal),
-        payrollTotal = Value(payrollTotal);
+  }) : weekStart = Value(weekStart);
   static Insertable<WeeklySnapshot> custom({
     Expression<int>? id,
     Expression<DateTime>? weekStart,
@@ -6716,10 +6712,10 @@ typedef $$WeeklySnapshotsTableCreateCompanionBuilder = WeeklySnapshotsCompanion
     Function({
   Value<int> id,
   required DateTime weekStart,
-  required int incomeTotal,
-  required int expenseTotal,
-  required int debtTotal,
-  required int payrollTotal,
+  Value<int> incomeTotal,
+  Value<int> expenseTotal,
+  Value<int> debtTotal,
+  Value<int> payrollTotal,
   Value<DateTime> generatedAt,
 });
 typedef $$WeeklySnapshotsTableUpdateCompanionBuilder = WeeklySnapshotsCompanion
@@ -6875,10 +6871,10 @@ class $$WeeklySnapshotsTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required DateTime weekStart,
-            required int incomeTotal,
-            required int expenseTotal,
-            required int debtTotal,
-            required int payrollTotal,
+            Value<int> incomeTotal = const Value.absent(),
+            Value<int> expenseTotal = const Value.absent(),
+            Value<int> debtTotal = const Value.absent(),
+            Value<int> payrollTotal = const Value.absent(),
             Value<DateTime> generatedAt = const Value.absent(),
           }) =>
               WeeklySnapshotsCompanion.insert(

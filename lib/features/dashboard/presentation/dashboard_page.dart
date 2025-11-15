@@ -143,6 +143,18 @@ class DashboardPage extends ConsumerWidget {
                                 )
                                 .toList(),
                           ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              '/report/weekly',
+                            ),
+                            icon: const Icon(Icons.picture_as_pdf_outlined),
+                            label: const Text('Haftalık Raporlar'),
+                          ),
+                        ),
                       ],
                     ),
                   ),

@@ -58,6 +58,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const TransactionListPage());
       case '/reports/weekly':
         return MaterialPageRoute(builder: (_) => const WeeklyReportPage());
+      case '/report/weekly':
+        return MaterialPageRoute(builder: (_) => const WeeklyReportPage());
       case '/employer/form':
         final formArgs =
             args is EmployerFormArgs ? args : const EmployerFormArgs();
