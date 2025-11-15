@@ -27,22 +27,32 @@ class TransactionFormNotifier extends StateNotifier<TransactionFormState> {
   final FinanceRepository _repo;
   final int? _transactionId;
 
-  void setType(String value) => state = state.copyWith(type: value);
+  void setType(String value) =>
+      state = state.copyWith(type: value, clearError: true);
 
-  void setAmount(String value) => state = state.copyWith(amount: value);
+  void setAmount(String value) =>
+      state = state.copyWith(amount: value, clearError: true);
 
-  void setCategory(String value) => state = state.copyWith(category: value);
+  void setCategory(String value) =>
+      state = state.copyWith(category: value, clearError: true);
 
-  void setEmployer(int? id) =>
-      state = state.copyWith(employerId: id, clearProject: true);
+  void setEmployer(int? id) => state = state.copyWith(
+        employerId: id,
+        clearProject: true,
+        clearError: true,
+      );
 
-  void setProject(int? id) => state = state.copyWith(projectId: id);
+  void setProject(int? id) =>
+      state = state.copyWith(projectId: id, clearError: true);
 
   void setDescription(String value) =>
-      state = state.copyWith(description: value);
+      state = state.copyWith(description: value, clearError: true);
 
-  void setDate(DateTime value) =>
-      state = state.copyWith(updateDate: true, txDate: value);
+  void setDate(DateTime value) => state = state.copyWith(
+        updateDate: true,
+        txDate: value,
+        clearError: true,
+      );
 
   Future<void> _load() async {
     try {
@@ -79,6 +89,11 @@ class TransactionFormNotifier extends StateNotifier<TransactionFormState> {
       state = state.copyWith(saving: true, clearError: true);
       final amount =
           (double.tryParse(state.amount.replaceAll(',', '.')) ?? 0) * 100;
+      final validation = _validate(amount);
+      if (validation != null) {
+        state = state.copyWith(saving: false, error: validation);
+        return false;
+      }
       final model = IncomeExpenseModel(
         id: state.id,
         projectId: state.projectId,
@@ -103,5 +118,18 @@ class TransactionFormNotifier extends StateNotifier<TransactionFormState> {
       state = state.copyWith(saving: false, error: e.toString());
       return false;
     }
+  }
+
+  String? _validate(double amount) {
+    if (amount <= 0) {
+      return 'Tutar pozitif olmalı';
+    }
+    if (state.category.trim().isEmpty) {
+      return 'Kategori seçin';
+    }
+    if (state.type == 'expense' && amount <= 0) {
+      return 'Gider tutarı pozitif olmalıdır';
+    }
+    return null;
   }
 }

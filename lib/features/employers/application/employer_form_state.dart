@@ -52,5 +52,10 @@ class EmployerFormState {
     );
   }
 
-  bool get canSubmit => !loading && !saving && name.trim().isNotEmpty;
+  bool get isValid {
+    final limit = int.tryParse(totalCreditLimit) ?? 0;
+    return name.trim().isNotEmpty && limit >= 0;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

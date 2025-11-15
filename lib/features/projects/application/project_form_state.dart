@@ -62,6 +62,10 @@ class ProjectFormState {
     );
   }
 
-  bool get canSubmit =>
-      !loading && !saving && title.trim().isNotEmpty && employerId != null;
+  bool get isValid {
+    final parsedBudget = double.tryParse(budget.replaceAll(',', '.')) ?? 0;
+    return title.trim().isNotEmpty && employerId != null && parsedBudget > 0;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

@@ -52,10 +52,10 @@ class PaymentFormState {
     );
   }
 
-  bool get canSubmit =>
-      !loading &&
-      !saving &&
-      workerId != null &&
-      projectId != null &&
-      amount.trim().isNotEmpty;
+  bool get isValid {
+    final parsed = double.tryParse(amount.replaceAll(',', '.')) ?? 0;
+    return workerId != null && projectId != null && parsed > 0;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

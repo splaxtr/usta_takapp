@@ -24,15 +24,20 @@ class WorkerFormNotifier extends StateNotifier<WorkerFormState> {
   final WorkerRepository _repo;
   final int? _workerId;
 
-  void setName(String value) => state = state.copyWith(fullName: value);
+  void setName(String value) =>
+      state = state.copyWith(fullName: value, clearError: true);
 
-  void setDailyRate(String value) => state = state.copyWith(dailyRate: value);
+  void setDailyRate(String value) =>
+      state = state.copyWith(dailyRate: value, clearError: true);
 
-  void setPhone(String value) => state = state.copyWith(phone: value);
+  void setPhone(String value) =>
+      state = state.copyWith(phone: value, clearError: true);
 
-  void setNote(String value) => state = state.copyWith(note: value);
+  void setNote(String value) =>
+      state = state.copyWith(note: value, clearError: true);
 
-  void setActive(bool value) => state = state.copyWith(active: value);
+  void setActive(bool value) =>
+      state = state.copyWith(active: value, clearError: true);
 
   Future<void> _load() async {
     try {
@@ -60,6 +65,16 @@ class WorkerFormNotifier extends StateNotifier<WorkerFormState> {
     }
   }
 
+  String? _validate(double rate) {
+    if (state.fullName.trim().isEmpty) {
+      return 'İsim zorunludur';
+    }
+    if (rate <= 0) {
+      return 'Günlük ücret pozitif olmalı';
+    }
+    return null;
+  }
+
   Future<bool> save() async {
     if (!state.canSubmit) return false;
     try {
@@ -69,6 +84,11 @@ class WorkerFormNotifier extends StateNotifier<WorkerFormState> {
               ) ??
               0) *
           100;
+      final validation = _validate(rate);
+      if (validation != null) {
+        state = state.copyWith(saving: false, error: validation);
+        return false;
+      }
       final worker = WorkerModel(
         id: state.id,
         fullName: state.fullName.trim(),

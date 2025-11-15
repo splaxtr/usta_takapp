@@ -52,6 +52,10 @@ class WorkerFormState {
     );
   }
 
-  bool get canSubmit =>
-      !loading && !saving && fullName.trim().isNotEmpty && dailyRate.isNotEmpty;
+  bool get isValid {
+    final rate = double.tryParse(dailyRate.replaceAll(',', '.')) ?? 0;
+    return fullName.trim().isNotEmpty && rate > 0;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

@@ -63,5 +63,10 @@ class TransactionFormState {
     );
   }
 
-  bool get canSubmit => !loading && !saving && amount.trim().isNotEmpty;
+  bool get isValid {
+    final parsed = double.tryParse(amount.replaceAll(',', '.')) ?? 0;
+    return parsed > 0 && category.trim().isNotEmpty;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

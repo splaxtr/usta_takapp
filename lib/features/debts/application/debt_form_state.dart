@@ -68,6 +68,10 @@ class DebtFormState {
     );
   }
 
-  bool get canSubmit =>
-      !loading && !saving && employerId != null && amount.trim().isNotEmpty;
+  bool get isValid {
+    final parsed = double.tryParse(amount.replaceAll(',', '.')) ?? 0;
+    return employerId != null && parsed > 0;
+  }
+
+  bool get canSubmit => !loading && !saving && isValid;
 }

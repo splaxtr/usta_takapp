@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../application/worker_form_notifier.dart';
 import '../application/worker_form_state.dart';
@@ -21,6 +22,7 @@ class _WorkerFormPageState extends ConsumerState<WorkerFormPage> {
       workerFormNotifierProvider(widget.workerId);
 
   Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(_provider.notifier);
     final success = await notifier.save();
     if (success && mounted) {
@@ -36,6 +38,7 @@ class _WorkerFormPageState extends ConsumerState<WorkerFormPage> {
     return FormScaffold(
       title: state.id == null ? 'Çalışan Oluştur' : 'Çalışanı Düzenle',
       onSave: state.canSubmit && !state.loading ? _save : null,
+      errorText: state.error,
       child: state.loading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -47,6 +50,7 @@ class _WorkerFormPageState extends ConsumerState<WorkerFormPage> {
                     key: ValueKey('worker-name-${state.revision}'),
                     initialValue: state.fullName,
                     decoration: const InputDecoration(labelText: 'Ad Soyad'),
+                    validator: Validators.required,
                     onChanged: notifier.setName,
                   ),
                   const SizedBox(height: 12),
@@ -56,6 +60,7 @@ class _WorkerFormPageState extends ConsumerState<WorkerFormPage> {
                     decoration:
                         const InputDecoration(labelText: 'Günlük Ücret'),
                     keyboardType: TextInputType.number,
+                    validator: Validators.positiveDouble,
                     onChanged: notifier.setDailyRate,
                   ),
                   const SizedBox(height: 12),
@@ -81,13 +86,6 @@ class _WorkerFormPageState extends ConsumerState<WorkerFormPage> {
                     value: state.active,
                     onChanged: notifier.setActive,
                   ),
-                  if (state.error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      state.error!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
                   const SizedBox(height: 32),
                 ],
               ),

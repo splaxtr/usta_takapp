@@ -24,22 +24,29 @@ class ProjectFormNotifier extends StateNotifier<ProjectFormState> {
   final ProjectRepository _repo;
   final int? _projectId;
 
-  void setTitle(String value) => state = state.copyWith(title: value);
+  void setTitle(String value) =>
+      state = state.copyWith(title: value, clearError: true);
 
-  void setEmployer(int? id) => state = state.copyWith(employerId: id);
+  void setEmployer(int? id) =>
+      state = state.copyWith(employerId: id, clearError: true);
 
-  void setStartDate(DateTime date) =>
-      state = state.copyWith(updateStartDate: true, startDate: date);
+  void setStartDate(DateTime date) => state = state.copyWith(
+        updateStartDate: true,
+        startDate: date,
+        clearError: true,
+      );
 
   void setEndDate(DateTime? date) => state = state.copyWith(
         endDate: date,
         clearEndDate: date == null,
+        clearError: true,
       );
 
-  void setBudget(String value) => state = state.copyWith(budget: value);
+  void setBudget(String value) =>
+      state = state.copyWith(budget: value, clearError: true);
 
   void setDescription(String value) =>
-      state = state.copyWith(description: value);
+      state = state.copyWith(description: value, clearError: true);
 
   Future<void> _load() async {
     try {
@@ -70,6 +77,22 @@ class ProjectFormNotifier extends StateNotifier<ProjectFormState> {
     }
   }
 
+  String? _validate(double budget) {
+    if (state.title.trim().isEmpty) {
+      return 'Başlık zorunludur';
+    }
+    if (state.employerId == null) {
+      return 'İşveren seçmelisiniz';
+    }
+    if (budget <= 0) {
+      return 'Bütçe pozitif olmalı';
+    }
+    if (state.endDate != null && state.endDate!.isBefore(state.startDate)) {
+      return 'Bitiş tarihi başlangıçtan önce olamaz';
+    }
+    return null;
+  }
+
   Future<bool> save() async {
     if (!state.canSubmit) return false;
     try {
@@ -79,6 +102,11 @@ class ProjectFormNotifier extends StateNotifier<ProjectFormState> {
               ) ??
               0) *
           100;
+      final validation = _validate(parsedBudget);
+      if (validation != null) {
+        state = state.copyWith(saving: false, error: validation);
+        return false;
+      }
       final project = Project(
         id: state.id,
         employerId: state.employerId!,

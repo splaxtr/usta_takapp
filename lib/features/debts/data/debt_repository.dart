@@ -163,6 +163,31 @@ class DebtRepository {
     }
   }
 
+  Future<int> totalOutstandingForEmployer(
+    int employerId, {
+    int? excludeDebtId,
+  }) async {
+    final variables = [
+      Variable<int>(employerId),
+      if (excludeDebtId != null) Variable<int>(excludeDebtId),
+    ];
+    final whereExclude = excludeDebtId != null ? 'AND id != ?2' : '';
+    final row = await _db
+        .customSelect(
+          '''
+        SELECT COALESCE(SUM(amount), 0) AS total
+        FROM debts
+        WHERE employer_id = ?1
+          AND status IN ('pending','partial')
+          $whereExclude
+      ''',
+          variables: variables,
+          readsFrom: {_db.debts},
+        )
+        .getSingle();
+    return row.read<int>('total');
+  }
+
   void mapperSanityCheckDebt(db.Debt row) {
     _toCompanion(_mapDebt(row));
   }

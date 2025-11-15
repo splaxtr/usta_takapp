@@ -25,19 +25,19 @@ class EmployerFormNotifier extends StateNotifier<EmployerFormState> {
   final int? _employerId;
 
   void setName(String value) {
-    state = state.copyWith(name: value);
+    state = state.copyWith(name: value, clearError: true);
   }
 
   void setPhone(String value) {
-    state = state.copyWith(phone: value);
+    state = state.copyWith(phone: value, clearError: true);
   }
 
   void setNote(String value) {
-    state = state.copyWith(note: value);
+    state = state.copyWith(note: value, clearError: true);
   }
 
   void setTotalCreditLimit(String value) {
-    state = state.copyWith(totalCreditLimit: value);
+    state = state.copyWith(totalCreditLimit: value, clearError: true);
   }
 
   Future<void> _load() async {
@@ -66,8 +66,28 @@ class EmployerFormNotifier extends StateNotifier<EmployerFormState> {
     }
   }
 
+  String? _validate() {
+    if (state.name.trim().isEmpty) {
+      return 'Ad zorunludur';
+    }
+    final limit = int.tryParse(state.totalCreditLimit) ?? 0;
+    if (limit < 0) {
+      return 'Limit negatif olamaz';
+    }
+    final phone = state.phone.trim();
+    if (phone.isNotEmpty && !RegExp(r'^\+?[0-9 ]+$').hasMatch(phone)) {
+      return 'Telefon formatı geçersiz';
+    }
+    return null;
+  }
+
   Future<bool> save() async {
     if (!state.canSubmit) return false;
+    final validation = _validate();
+    if (validation != null) {
+      state = state.copyWith(error: validation);
+      return false;
+    }
     try {
       state = state.copyWith(saving: true, clearError: true);
       final limit = int.tryParse(state.totalCreditLimit) ?? 0;

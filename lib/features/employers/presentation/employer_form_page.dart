@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/validation/validators.dart';
 import '../../../core/widgets/form_scaffold.dart';
 import '../application/employer_form_notifier.dart';
 import '../application/employer_form_state.dart';
@@ -21,6 +22,7 @@ class _EmployerFormPageState extends ConsumerState<EmployerFormPage> {
       employerFormNotifierProvider(widget.employerId);
 
   Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(_provider.notifier);
     final success = await notifier.save();
     if (success && mounted) {
@@ -36,6 +38,7 @@ class _EmployerFormPageState extends ConsumerState<EmployerFormPage> {
     return FormScaffold(
       title: state.id == null ? 'İşveren Oluştur' : 'İşvereni Düzenle',
       onSave: state.canSubmit && !state.loading ? _save : null,
+      errorText: state.error,
       child: state.loading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -47,6 +50,7 @@ class _EmployerFormPageState extends ConsumerState<EmployerFormPage> {
                     key: ValueKey('employer-name-${state.revision}'),
                     initialValue: state.name,
                     decoration: const InputDecoration(labelText: 'Ad / Firma'),
+                    validator: Validators.required,
                     onChanged: notifier.setName,
                   ),
                   const SizedBox(height: 12),
@@ -74,15 +78,16 @@ class _EmployerFormPageState extends ConsumerState<EmployerFormPage> {
                       labelText: 'Toplam Kredi Limiti',
                     ),
                     keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return null;
+                      final parsed = int.tryParse(value);
+                      if (parsed == null || parsed < 0) {
+                        return 'Limit negatif olamaz';
+                      }
+                      return null;
+                    },
                     onChanged: notifier.setTotalCreditLimit,
                   ),
-                  if (state.error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      state.error!,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
                   const SizedBox(height: 32),
                 ],
               ),
