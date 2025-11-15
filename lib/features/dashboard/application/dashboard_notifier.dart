@@ -4,10 +4,11 @@ import '../../../core/providers/app_providers.dart';
 import '../data/dashboard_repository.dart';
 import 'dashboard_state.dart';
 
-final dashboardProvider = StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  final repo = ref.watch(dashboardRepositoryProvider);
-  return DashboardNotifier(repo)..loadDashboard();
-});
+final dashboardProvider =
+    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
+      final repo = ref.read(dashboardRepositoryProvider);
+      return DashboardNotifier(repo)..loadDashboard();
+    });
 
 class DashboardNotifier extends StateNotifier<DashboardState> {
   DashboardNotifier(this._repository) : super(DashboardState.initial());

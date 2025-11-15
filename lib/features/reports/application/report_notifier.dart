@@ -8,8 +8,8 @@ import 'report_state.dart';
 
 final reportNotifierProvider =
     StateNotifierProvider<ReportNotifier, ReportState>((ref) {
-      final repo = ref.watch(reportRepositoryProvider);
-      final export = ref.watch(exportServiceProvider);
+      final repo = ref.read(reportRepositoryProvider);
+      final export = ref.read(exportServiceProvider);
       return ReportNotifier(repo, export)..loadWeekData();
     });
 

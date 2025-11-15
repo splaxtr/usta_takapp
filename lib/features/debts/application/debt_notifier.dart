@@ -9,7 +9,7 @@ import 'debt_state.dart';
 final debtNotifierProvider = StateNotifierProvider<DebtNotifier, DebtState>((
   ref,
 ) {
-  final repo = ref.watch(debtRepositoryProvider);
+  final repo = ref.read(debtRepositoryProvider);
   return DebtNotifier(repo)..loadDebts();
 });
 

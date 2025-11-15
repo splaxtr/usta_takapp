@@ -9,7 +9,7 @@ import 'worker_state.dart';
 
 final workerNotifierProvider =
     StateNotifierProvider<WorkerNotifier, WorkerState>((ref) {
-      final repo = ref.watch(workerRepositoryProvider);
+      final repo = ref.read(workerRepositoryProvider);
       return WorkerNotifier(repo)..loadWorkers();
     });
 

@@ -11,9 +11,9 @@ import 'employer_state.dart';
 
 final employerNotifierProvider =
     StateNotifierProvider<EmployerNotifier, EmployerState>((ref) {
-      final repo = ref.watch(employerRepositoryProvider);
-      final projectRepo = ref.watch(projectRepositoryProvider);
-      final debtRepo = ref.watch(debtRepositoryProvider);
+      final repo = ref.read(employerRepositoryProvider);
+      final projectRepo = ref.read(projectRepositoryProvider);
+      final debtRepo = ref.read(debtRepositoryProvider);
       return EmployerNotifier(repo, projectRepo, debtRepo)..loadEmployers();
     });
 

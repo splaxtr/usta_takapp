@@ -7,7 +7,7 @@ import 'finance_state.dart';
 
 final financeNotifierProvider =
     StateNotifierProvider<FinanceNotifier, FinanceState>((ref) {
-      final repo = ref.watch(financeRepositoryProvider);
+      final repo = ref.read(financeRepositoryProvider);
       return FinanceNotifier(repo)..loadAll();
     });
 

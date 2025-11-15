@@ -8,11 +8,7 @@ import 'project_state.dart';
 
 final projectNotifierProvider =
     StateNotifierProvider<ProjectNotifier, ProjectState>((ref) {
-      final repo = ref.watch(projectRepositoryProvider);
-      // Diğer repository provider'larıyla bağı koru (ileri görevlerde kullanılacak)
-      ref.watch(financeRepositoryProvider);
-      ref.watch(debtRepositoryProvider);
-      ref.watch(workerRepositoryProvider);
+      final repo = ref.read(projectRepositoryProvider);
       return ProjectNotifier(repo)..loadProjects();
     });
 

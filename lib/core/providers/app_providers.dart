@@ -17,37 +17,37 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 });
 
 final employerRepositoryProvider = Provider<EmployerRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return EmployerRepository(db);
 });
 
 final projectRepositoryProvider = Provider<ProjectRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return ProjectRepository(db);
 });
 
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return FinanceRepository(db);
 });
 
 final debtRepositoryProvider = Provider<DebtRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return DebtRepository(db);
 });
 
 final workerRepositoryProvider = Provider<WorkerRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return WorkerRepository(db);
 });
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return ReportRepository(db);
 });
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
-  final db = ref.watch(databaseProvider);
+  final db = ref.read(databaseProvider);
   return DashboardRepository(db);
 });
 
