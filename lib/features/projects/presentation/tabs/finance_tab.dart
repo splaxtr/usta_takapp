@@ -52,38 +52,42 @@ class _ProjectFinanceTabState extends ConsumerState<ProjectFinanceTab> {
     }
 
     final items = financeState.transactions;
-    return Column(
-      children: [
-        Expanded(
-          child: items.isEmpty
-              ? const Center(child: Text('Bu projede işlem yok'))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, index) => TransactionTile(
-                    model: items[index],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (items.isEmpty)
+              const Text('Bu projede işlem yok')
+            else
+              ...items.map(
+                (tx) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: TransactionTile(
+                    model: tx,
                     employerName: null,
                     projectName: project.title,
                   ),
                 ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton.icon(
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => AddTransactionModal(
-                initialProjectId: project.id,
-                initialEmployerId: project.employerId,
               ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => AddTransactionModal(
+                  initialProjectId: project.id,
+                  initialEmployerId: project.employerId,
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('İşlem Ekle'),
             ),
-            icon: const Icon(Icons.add),
-            label: const Text('İşlem Ekle'),
-          ),
+            const SizedBox(height: 32),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

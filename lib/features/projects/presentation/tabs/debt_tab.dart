@@ -19,13 +19,35 @@ class ProjectDebtTab extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (debts.isEmpty) {
-      return const Center(child: Text('Bu projeye ait borç bulunmuyor'));
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('Bu projeye ait borç bulunmuyor'),
+              SizedBox(height: 32),
+            ],
+          ),
+        ),
+      );
     }
-    return ListView.separated(
+    return Padding(
       padding: const EdgeInsets.all(16),
-      itemBuilder: (_, index) => DebtTile(debt: debts[index]),
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemCount: debts.length,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ...debts.map(
+              (debt) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: DebtTile(debt: debt),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }

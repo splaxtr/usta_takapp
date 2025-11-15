@@ -25,36 +25,42 @@ class ProjectWorkersTab extends ConsumerWidget {
       return const Center(child: Text('Çalışan kaydı yok'));
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (_, index) => WorkerTile(
-              worker: workers[index],
-              stats: stats[workers[index].id ?? -1],
-            ),
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemCount: workers.length,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Çalışan gün ekleme çalışan modülünden yapılabilir.',
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (workers.isEmpty)
+              const Text('Çalışan kaydı yok')
+            else
+              ...workers.map(
+                (worker) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: WorkerTile(
+                    worker: worker,
+                    stats: stats[worker.id ?? -1],
                   ),
                 ),
-              );
-            },
-            icon: const Icon(Icons.calendar_today),
-            label: const Text('Gün Ekle'),
-          ),
+              ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Çalışan gün ekleme çalışan modülünden yapılabilir.',
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.calendar_today),
+              label: const Text('Gün Ekle'),
+            ),
+            const SizedBox(height: 32),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

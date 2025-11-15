@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/common_app_bar.dart';
+import '../../../core/widgets/section_scaffold.dart';
 import '../application/project_notifier.dart';
 import 'tabs/debt_tab.dart';
 import 'tabs/finance_tab.dart';
@@ -34,48 +35,40 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
     final state = ref.watch(projectNotifierProvider);
     final project = state.selectedProject;
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        appBar: CommonAppBar(
-          title: project?.title ?? 'Proje Detayı',
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Özet'),
-              Tab(text: 'Finans'),
-              Tab(text: 'Borçlar'),
-              Tab(text: 'Çalışanlar'),
-              Tab(text: 'Ödemeler'),
-            ],
-          ),
-        ),
-        body: state.loading && project == null
-            ? const Center(child: CircularProgressIndicator())
-            : state.error != null
-            ? Center(child: Text(state.error!))
-            : Column(
-                children: [
-                  ProjectHeader(
-                    projectName: project?.title ?? '',
-                    status: project?.status ?? '-',
-                    employerId: project?.employerId ?? 0,
+    return Scaffold(
+      appBar: CommonAppBar(title: project?.title ?? 'Proje Detayı'),
+      body: state.loading && project == null
+          ? const Center(child: CircularProgressIndicator())
+          : state.error != null
+          ? Center(child: Text(state.error!))
+          : Column(
+              children: [
+                ProjectHeader(
+                  projectName: project?.title ?? '',
+                  status: project?.status ?? '-',
+                  employerId: project?.employerId ?? 0,
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: SectionScaffold(
+                    tabs: const [
+                      Tab(text: 'Özet'),
+                      Tab(text: 'Çalışanlar'),
+                      Tab(text: 'Finans'),
+                      Tab(text: 'Borçlar'),
+                      Tab(text: 'Ödemeler'),
+                    ],
+                    children: [
+                      ProjectSummaryTab(projectId: widget.projectId),
+                      ProjectWorkersTab(projectId: widget.projectId),
+                      ProjectFinanceTab(projectId: widget.projectId),
+                      ProjectDebtTab(projectId: widget.projectId),
+                      ProjectPaymentsTab(projectId: widget.projectId),
+                    ],
                   ),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        ProjectSummaryTab(projectId: widget.projectId),
-                        ProjectFinanceTab(projectId: widget.projectId),
-                        ProjectDebtTab(projectId: widget.projectId),
-                        ProjectWorkersTab(projectId: widget.projectId),
-                        ProjectPaymentsTab(projectId: widget.projectId),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-      ),
+                ),
+              ],
+            ),
     );
   }
 }

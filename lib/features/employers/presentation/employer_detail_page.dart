@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/common_app_bar.dart';
+import '../../../core/widgets/section_scaffold.dart';
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
 import '../../projects/domain/project.dart';
@@ -32,134 +33,153 @@ class _EmployerDetailPageState extends ConsumerState<EmployerDetailPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(employerNotifierProvider);
     final employer = state.selectedEmployer;
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: CommonAppBar(
-          title: employer?.name ?? 'İşveren Detayı',
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Projeler'),
-              Tab(text: 'Borçlar'),
-              Tab(text: 'İletişim'),
-            ],
-          ),
-        ),
-        body: state.loading && employer == null
-            ? const Center(child: CircularProgressIndicator())
-            : state.error != null
-            ? Center(child: Text(state.error!))
-            : Column(
-                children: [
-                  if (employer != null)
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: EmployerHeaderCard(
-                        employer: employer,
-                        totalDebt: state.totalDebt,
-                      ),
-                    ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _EmployerProjectsTab(projects: state.projects),
-                        _EmployerDebtsTab(debts: state.debts),
-                        _EmployerContactTab(employer: employer),
-                      ],
+    return Scaffold(
+      appBar: CommonAppBar(title: employer?.name ?? 'İşveren Detayı'),
+      body: state.loading && employer == null
+          ? const Center(child: CircularProgressIndicator())
+          : state.error != null
+          ? Center(child: Text(state.error!))
+          : Column(
+              children: [
+                if (employer != null)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: EmployerHeaderCard(
+                      employer: employer,
+                      totalDebt: state.totalDebt,
                     ),
                   ),
-                ],
-              ),
-      ),
+                Expanded(
+                  child: SectionScaffold(
+                    tabs: const [
+                      Tab(text: 'Projeler'),
+                      Tab(text: 'Borçlar'),
+                      Tab(text: 'İletişim'),
+                    ],
+                    children: [
+                      EmployerProjectsSection(projects: state.projects),
+                      EmployerDebtsSection(debts: state.debts),
+                      EmployerContactSection(employer: employer),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
 
-class _EmployerProjectsTab extends StatelessWidget {
-  const _EmployerProjectsTab({required this.projects});
+class EmployerProjectsSection extends StatelessWidget {
+  const EmployerProjectsSection({required this.projects});
 
   final List<Project> projects;
 
   @override
   Widget build(BuildContext context) {
-    if (projects.isEmpty) {
-      return const Center(child: Text('Bu işverene ait proje yok'));
-    }
-    return ListView.separated(
+    return Padding(
       padding: const EdgeInsets.all(16),
-      itemCount: projects.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (_, index) => EmployerProjectTile(
-        project: projects[index],
-        onTap: projects[index].id == null
-            ? null
-            : () => Navigator.pushNamed(
-                context,
-                '/project/detail',
-                arguments: projects[index].id,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (projects.isEmpty)
+              const Text('Bu işverene ait proje yok')
+            else
+              ...projects.map(
+                (project) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: EmployerProjectTile(
+                    project: project,
+                    onTap: project.id == null
+                        ? null
+                        : () => Navigator.pushNamed(
+                            context,
+                            '/project/detail',
+                            arguments: project.id,
+                          ),
+                  ),
+                ),
               ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _EmployerDebtsTab extends StatelessWidget {
-  const _EmployerDebtsTab({required this.debts});
+class EmployerDebtsSection extends StatelessWidget {
+  const EmployerDebtsSection({required this.debts});
 
   final List<Debt> debts;
 
   @override
   Widget build(BuildContext context) {
-    if (debts.isEmpty) {
-      return const Center(child: Text('Borç kaydı bulunmuyor'));
-    }
-    return ListView.separated(
+    return Padding(
       padding: const EdgeInsets.all(16),
-      itemCount: debts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (_, index) => EmployerDebtTile(
-        debt: debts[index],
-        onTap: debts[index].id == null
-            ? null
-            : () => Navigator.pushNamed(
-                context,
-                '/debt/detail',
-                arguments: debts[index].id,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (debts.isEmpty)
+              const Text('Borç kaydı bulunmuyor')
+            else
+              ...debts.map(
+                (debt) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: EmployerDebtTile(
+                    debt: debt,
+                    onTap: debt.id == null
+                        ? null
+                        : () => Navigator.pushNamed(
+                            context,
+                            '/debt/detail',
+                            arguments: debt.id,
+                          ),
+                  ),
+                ),
               ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _EmployerContactTab extends StatelessWidget {
-  const _EmployerContactTab({required this.employer});
+class EmployerContactSection extends StatelessWidget {
+  const EmployerContactSection({required this.employer});
 
   final Employer? employer;
 
   @override
   Widget build(BuildContext context) {
-    if (employer == null) {
-      return const Center(child: Text('İşveren bulunamadı'));
-    }
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Telefon: ${employer.contact ?? '-'}'),
-          const SizedBox(height: 12),
-          Text('Notlar:'),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white.withOpacity(0.03),
-            ),
-            child: Text(employer.note ?? 'Not bulunmuyor'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (employer == null)
+              const Text('İşveren bulunamadı')
+            else ...[
+              Text('Telefon: ${employer!.contact ?? '-'}'),
+              const SizedBox(height: 12),
+              Text('Notlar:'),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(0.03),
+                ),
+                child: Text(employer!.note ?? 'Not bulunmuyor'),
+              ),
+            ],
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

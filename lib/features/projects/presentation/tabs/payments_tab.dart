@@ -18,37 +18,40 @@ class ProjectPaymentsTab extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
     final payments = state.payments;
-    if (payments.isEmpty) {
-      return const Center(child: Text('Ödeme kaydı yok'));
-    }
 
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: payments.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (_, index) => PaymentTile(payment: payments[index]),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Ödeme ekleme işlemi çalışan modülünden yapılır.',
-                  ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (payments.isEmpty)
+              const Text('Ödeme kaydı yok')
+            else
+              ...payments.map(
+                (payment) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: PaymentTile(payment: payment),
                 ),
-              );
-            },
-            icon: const Icon(Icons.attach_money),
-            label: const Text('Ödeme Ekle'),
-          ),
+              ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Ödeme ekleme işlemi çalışan modülünden yapılır.',
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.attach_money),
+              label: const Text('Ödeme Ekle'),
+            ),
+            const SizedBox(height: 32),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

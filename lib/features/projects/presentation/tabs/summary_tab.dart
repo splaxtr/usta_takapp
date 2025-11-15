@@ -76,6 +76,7 @@ class ProjectSummaryTab extends ConsumerWidget {
             ),
             child: const Text('Zaman çizelgesi gelecek görevlerde eklenecek.'),
           ),
+          const SizedBox(height: 32),
         ],
       ),
     );
