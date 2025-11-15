@@ -1,27 +1,121 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProjectListPage extends StatelessWidget {
+import '../application/project_notifier.dart';
+import '../domain/project.dart';
+import '../domain/project_metrics.dart';
+import 'project_detail_page.dart';
+
+class ProjectListPage extends ConsumerWidget {
   const ProjectListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(projectNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projeler'),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.filter_list),
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list)),
         ],
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(16),
-        child: Placeholder(),
-      ),
+      body: state.loading
+          ? const Center(child: CircularProgressIndicator())
+          : state.error != null
+          ? Center(child: Text(state.error!))
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (_, index) {
+                final project = state.projects[index];
+                final summary = project.id != null
+                    ? state.projectSummaries[project.id!]
+                    : null;
+                return ProjectCard(
+                  project: project,
+                  summary: summary,
+                  onTap: () {
+                    if (project.id == null) return;
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ProjectDetailPage(projectId: project.id!),
+                      ),
+                    );
+                  },
+                );
+              },
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemCount: state.projects.length,
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add_box),
+      ),
+    );
+  }
+}
+
+class ProjectCard extends StatelessWidget {
+  const ProjectCard({
+    super.key,
+    required this.project,
+    required this.summary,
+    required this.onTap,
+  });
+
+  final Project project;
+  final ProjectSummaryStats? summary;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final incomeText = summary != null
+        ? (summary!.income / 100).toStringAsFixed(2)
+        : '-';
+    final expenseText = summary != null
+        ? (summary!.expense / 100).toStringAsFixed(2)
+        : '-';
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.white.withOpacity(0.03),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    project.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Chip(label: Text(project.status)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
+            ),
+            if (project.endDate != null)
+              Text(
+                'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: Text('Gelir: $incomeText ₺')),
+                Expanded(child: Text('Gider: $expenseText ₺')),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

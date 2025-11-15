@@ -22,7 +22,7 @@ final employerRepositoryProvider = Provider<EmployerRepository>((ref) {
 
 final projectRepositoryProvider = Provider<ProjectRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return ProjectRepository(db.projectDao);
+  return ProjectRepository(db);
 });
 
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {

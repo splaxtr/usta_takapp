@@ -1,21 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'debt_tab.dart';
-import 'finance_tab.dart';
-import 'payments_tab.dart';
-import 'summary_tab.dart';
-import 'workers_tab.dart';
+import '../application/project_notifier.dart';
+import 'tabs/debt_tab.dart';
+import 'tabs/finance_tab.dart';
+import 'tabs/payments_tab.dart';
+import 'tabs/summary_tab.dart';
+import 'tabs/workers_tab.dart';
 
-class ProjectDetailPage extends StatelessWidget {
-  const ProjectDetailPage({super.key});
+class ProjectDetailPage extends ConsumerStatefulWidget {
+  const ProjectDetailPage({super.key, required this.projectId});
+
+  final int projectId;
+
+  @override
+  ConsumerState<ProjectDetailPage> createState() => _ProjectDetailPageState();
+}
+
+class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref
+          .read(projectNotifierProvider.notifier)
+          .loadProjectDetail(widget.projectId),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(projectNotifierProvider);
+    final project = state.selectedProject;
+
     return DefaultTabController(
       length: 5,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Proje Detay'),
+          title: Text(project?.title ?? 'Proje Detay'),
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
@@ -27,15 +49,67 @@ class ProjectDetailPage extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [
-            ProjectSummaryTab(),
-            ProjectFinanceTab(),
-            ProjectDebtTab(),
-            ProjectWorkersTab(),
-            ProjectPaymentsTab(),
-          ],
-        ),
+        body: state.loading && project == null
+            ? const Center(child: CircularProgressIndicator())
+            : state.error != null
+            ? Center(child: Text(state.error!))
+            : Column(
+                children: [
+                  ProjectHeader(
+                    projectName: project?.title ?? '',
+                    status: project?.status ?? '-',
+                    employerId: project?.employerId ?? 0,
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: TabBarView(
+                      children: const [
+                        ProjectSummaryTab(),
+                        ProjectFinanceTab(),
+                        ProjectDebtTab(),
+                        ProjectWorkersTab(),
+                        ProjectPaymentsTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class ProjectHeader extends StatelessWidget {
+  const ProjectHeader({
+    super.key,
+    required this.projectName,
+    required this.status,
+    required this.employerId,
+  });
+
+  final String projectName;
+  final String status;
+  final int employerId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      color: Colors.white.withOpacity(0.02),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(projectName, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Chip(label: Text(status)),
+              const SizedBox(width: 12),
+              Text('İşveren ID: $employerId'),
+            ],
+          ),
+        ],
       ),
     );
   }
