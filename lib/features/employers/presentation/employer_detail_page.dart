@@ -88,7 +88,16 @@ class _EmployerProjectsTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: projects.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (_, index) => EmployerProjectTile(project: projects[index]),
+      itemBuilder: (_, index) => EmployerProjectTile(
+        project: projects[index],
+        onTap: projects[index].id == null
+            ? null
+            : () => Navigator.pushNamed(
+                context,
+                '/project/detail',
+                arguments: projects[index].id,
+              ),
+      ),
     );
   }
 }
@@ -109,9 +118,13 @@ class _EmployerDebtsTab extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (_, index) => EmployerDebtTile(
         debt: debts[index],
-        onTap: () {
-          // Detay ekranı ileride eklenecek
-        },
+        onTap: debts[index].id == null
+            ? null
+            : () => Navigator.pushNamed(
+                context,
+                '/debt/detail',
+                arguments: debts[index].id,
+              ),
       ),
     );
   }

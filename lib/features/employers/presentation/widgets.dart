@@ -58,40 +58,48 @@ class EmployerHeaderCard extends StatelessWidget {
 }
 
 class EmployerProjectTile extends StatelessWidget {
-  const EmployerProjectTile({super.key, required this.project});
+  const EmployerProjectTile({super.key, required this.project, this.onTap});
 
   final Project project;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.02),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white.withOpacity(0.02),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                project.title,
-                style: Theme.of(context).textTheme.titleMedium,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    project.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Chip(label: Text(project.status)),
+                ],
               ),
-              Chip(label: Text(project.status)),
+              const SizedBox(height: 6),
+              Text(
+                'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
+              ),
+              if (project.endDate != null)
+                Text(
+                  'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
+                ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Başlangıç: ${project.startDate.toLocal().toString().split(' ').first}',
-          ),
-          if (project.endDate != null)
-            Text(
-              'Bitiş: ${project.endDate!.toLocal().toString().split(' ').first}',
-            ),
-        ],
+        ),
       ),
     );
   }

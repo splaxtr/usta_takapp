@@ -63,12 +63,12 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> {
                   const Divider(height: 1),
                   Expanded(
                     child: TabBarView(
-                      children: const [
-                        ProjectSummaryTab(),
-                        ProjectFinanceTab(),
-                        ProjectDebtTab(),
-                        ProjectWorkersTab(),
-                        ProjectPaymentsTab(),
+                      children: [
+                        ProjectSummaryTab(projectId: widget.projectId),
+                        ProjectFinanceTab(projectId: widget.projectId),
+                        ProjectDebtTab(projectId: widget.projectId),
+                        ProjectWorkersTab(projectId: widget.projectId),
+                        ProjectPaymentsTab(projectId: widget.projectId),
                       ],
                     ),
                   ),

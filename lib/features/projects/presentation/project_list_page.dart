@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/project_notifier.dart';
 import '../domain/project.dart';
 import '../domain/project_metrics.dart';
-import 'project_detail_page.dart';
 
 class ProjectListPage extends ConsumerWidget {
   const ProjectListPage({super.key});
@@ -36,11 +35,10 @@ class ProjectListPage extends ConsumerWidget {
                   summary: summary,
                   onTap: () {
                     if (project.id == null) return;
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ProjectDetailPage(projectId: project.id!),
-                      ),
+                    Navigator.pushNamed(
+                      context,
+                      '/project/detail',
+                      arguments: project.id,
                     );
                   },
                 );

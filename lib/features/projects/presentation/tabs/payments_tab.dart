@@ -5,11 +5,18 @@ import '../../../workers/domain/payment.dart';
 import '../../application/project_notifier.dart';
 
 class ProjectPaymentsTab extends ConsumerWidget {
-  const ProjectPaymentsTab({super.key});
+  const ProjectPaymentsTab({super.key, required this.projectId});
+
+  final int projectId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final payments = ref.watch(projectNotifierProvider).payments;
+    final state = ref.watch(projectNotifierProvider);
+    final project = state.selectedProject;
+    if (project == null || project.id != projectId) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final payments = state.payments;
     if (payments.isEmpty) {
       return const Center(child: Text('Ödeme kaydı yok'));
     }
@@ -26,7 +33,15 @@ class ProjectPaymentsTab extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Ödeme ekleme işlemi çalışan modülünden yapılır.',
+                  ),
+                ),
+              );
+            },
             icon: const Icon(Icons.attach_money),
             label: const Text('Ödeme Ekle'),
           ),

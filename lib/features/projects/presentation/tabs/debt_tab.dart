@@ -5,11 +5,18 @@ import '../../../debts/domain/debt.dart';
 import '../../application/project_notifier.dart';
 
 class ProjectDebtTab extends ConsumerWidget {
-  const ProjectDebtTab({super.key});
+  const ProjectDebtTab({super.key, required this.projectId});
+
+  final int projectId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final debts = ref.watch(projectNotifierProvider).debts;
+    final state = ref.watch(projectNotifierProvider);
+    final debts = state.debts;
+    final project = state.selectedProject;
+    if (project == null || project.id != projectId) {
+      return const Center(child: CircularProgressIndicator());
+    }
     if (debts.isEmpty) {
       return const Center(child: Text('Bu projeye ait borç bulunmuyor'));
     }
@@ -61,9 +68,13 @@ class DebtTile extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           IconButton(
-            onPressed: () {
-              // Borç detayına yönlendirme ileride eklenecek
-            },
+            onPressed: debt.id == null
+                ? null
+                : () => Navigator.pushNamed(
+                    context,
+                    '/debt/detail',
+                    arguments: debt.id,
+                  ),
             icon: const Icon(Icons.open_in_new),
           ),
         ],

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/employer_notifier.dart';
 import '../domain/employer.dart';
-import 'employer_detail_page.dart';
 import 'widgets.dart';
 
 class EmployerListPage extends ConsumerStatefulWidget {
@@ -65,11 +64,10 @@ class _EmployerListPageState extends ConsumerState<EmployerListPage> {
                       debtAmount: debtAmount,
                       onTap: () {
                         if (employer.id == null) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                EmployerDetailPage(employerId: employer.id!),
-                          ),
+                        Navigator.pushNamed(
+                          context,
+                          '/employer/detail',
+                          arguments: employer.id,
                         );
                       },
                     );

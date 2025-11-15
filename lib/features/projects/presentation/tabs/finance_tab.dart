@@ -7,30 +7,43 @@ import '../../../finance/presentation/widgets.dart';
 import '../../application/project_notifier.dart';
 
 class ProjectFinanceTab extends ConsumerStatefulWidget {
-  const ProjectFinanceTab({super.key});
+  const ProjectFinanceTab({super.key, required this.projectId});
+
+  final int projectId;
 
   @override
   ConsumerState<ProjectFinanceTab> createState() => _ProjectFinanceTabState();
 }
 
 class _ProjectFinanceTabState extends ConsumerState<ProjectFinanceTab> {
-  int? lastProjectId;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref
+          .read(financeNotifierProvider.notifier)
+          .loadByProject(widget.projectId),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant ProjectFinanceTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.projectId != widget.projectId) {
+      Future.microtask(
+        () => ref
+            .read(financeNotifierProvider.notifier)
+            .loadByProject(widget.projectId),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final projectState = ref.watch(projectNotifierProvider);
     final financeState = ref.watch(financeNotifierProvider);
     final project = projectState.selectedProject;
-    final projectId = project?.id;
-
-    if (projectId != null && projectId != lastProjectId) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(financeNotifierProvider.notifier).loadByProject(projectId);
-      });
-      lastProjectId = projectId;
-    }
-
-    if (projectId == null) {
+    if (project == null || project.id != widget.projectId) {
       return const Center(child: Text('Proje seçilmedi'));
     }
 

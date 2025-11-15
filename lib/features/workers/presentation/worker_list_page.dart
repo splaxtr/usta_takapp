@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/worker_notifier.dart';
 import '../domain/worker.dart';
 import 'add_worker_modal.dart';
-import 'worker_detail_page.dart';
 import 'worker_widgets.dart';
 
 class WorkerListPage extends ConsumerStatefulWidget {
@@ -94,11 +93,10 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
                       worker: worker,
                       onTap: () {
                         if (worker.id == null) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                WorkerDetailPage(workerId: worker.id!),
-                          ),
+                        Navigator.pushNamed(
+                          context,
+                          '/worker/detail',
+                          arguments: worker.id,
                         );
                       },
                     );

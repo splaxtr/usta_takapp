@@ -6,7 +6,6 @@ import '../../projects/application/project_notifier.dart';
 import '../application/debt_notifier.dart';
 import '../domain/debt.dart';
 import 'add_debt_modal.dart';
-import 'debt_detail_page.dart';
 import 'widgets.dart';
 
 class DebtListPage extends ConsumerStatefulWidget {
@@ -97,11 +96,13 @@ class _DebtListPageState extends ConsumerState<DebtListPage> {
                       debt: debt,
                       employerName: employerName,
                       projectName: projectName,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DebtDetailPage(debtId: debt.id!),
-                        ),
-                      ),
+                      onTap: debt.id == null
+                          ? null
+                          : () => Navigator.pushNamed(
+                              context,
+                              '/debt/detail',
+                              arguments: debt.id,
+                            ),
                     );
                   },
                 );

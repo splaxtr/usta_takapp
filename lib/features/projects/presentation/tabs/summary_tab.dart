@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/project_notifier.dart';
 
 class ProjectSummaryTab extends ConsumerWidget {
-  const ProjectSummaryTab({super.key});
+  const ProjectSummaryTab({super.key, required this.projectId});
+
+  final int projectId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(projectNotifierProvider);
     final project = state.selectedProject;
-    if (project == null) {
+    if (project == null || project.id != projectId) {
       return const Center(child: Text('Proje seçili değil'));
     }
 

@@ -6,11 +6,17 @@ import '../../application/project_notifier.dart';
 import '../../domain/project_metrics.dart';
 
 class ProjectWorkersTab extends ConsumerWidget {
-  const ProjectWorkersTab({super.key});
+  const ProjectWorkersTab({super.key, required this.projectId});
+
+  final int projectId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(projectNotifierProvider);
+    final project = state.selectedProject;
+    if (project == null || project.id != projectId) {
+      return const Center(child: CircularProgressIndicator());
+    }
     final workers = state.workers;
     final stats = state.workerStats;
 
@@ -35,7 +41,13 @@ class ProjectWorkersTab extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: ElevatedButton.icon(
             onPressed: () {
-              // Gün ekleme modalı ileride eklenecek
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Çalışan gün ekleme çalışan modülünden yapılabilir.',
+                  ),
+                ),
+              );
             },
             icon: const Icon(Icons.calendar_today),
             label: const Text('Gün Ekle'),
