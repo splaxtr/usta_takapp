@@ -83,21 +83,7 @@ class DebtNotifier extends StateNotifier<DebtState> {
   Future<void> addPayment(DebtPayment payment) async {
     await _repository.insertDebtPayment(payment);
     await loadPayments(payment.debtId);
-    await _updateStatusAfterPayment(payment.debtId);
     await loadDebts();
-  }
-
-  Future<void> _updateStatusAfterPayment(int debtId) async {
-    final debt = await _repository.fetchById(debtId);
-    if (debt == null) return;
-    final remaining = await _repository.getRemainingAmount(debtId);
-    if (remaining <= 0) {
-      await markAsPaid(debtId);
-    } else if (remaining < debt.amount) {
-      await markAsPartial(debtId);
-    } else {
-      await _repository.setStatus(debtId, 'pending');
-    }
   }
 
   Future<void> closeDebtIfFullyPaid(int debtId) async {
@@ -108,13 +94,13 @@ class DebtNotifier extends StateNotifier<DebtState> {
   }
 
   Future<void> markAsPartial(int debtId) async {
-    await _repository.setStatus(debtId, 'partial');
+    await _repository.setStatus(debtId, DebtStatus.partial);
     await loadDebtDetail(debtId);
     await loadDebts();
   }
 
   Future<void> markAsPaid(int debtId) async {
-    await _repository.setStatus(debtId, 'paid');
+    await _repository.setStatus(debtId, DebtStatus.paid);
     await loadDebtDetail(debtId);
     await loadDebts();
   }

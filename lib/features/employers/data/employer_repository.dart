@@ -8,19 +8,21 @@ import '../domain/employer.dart';
 
 class EmployerMapper {
   static Employer toDomain(db.Employer row) => Employer(
-    id: row.id,
-    name: row.name,
-    contact: row.contact,
-    note: row.note,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  );
+        id: row.id,
+        name: row.name,
+        contact: row.contact,
+        note: row.note,
+        totalCreditLimit: row.totalCreditLimit,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      );
 
   static db.EmployersCompanion toInsert(Employer model) =>
       db.EmployersCompanion(
         name: Value(model.name),
         contact: Value(model.contact),
         note: Value(model.note),
+        totalCreditLimit: Value(model.totalCreditLimit),
       );
 
   static db.EmployersCompanion toUpdate(Employer model) =>
@@ -29,12 +31,8 @@ class EmployerMapper {
         name: Value(model.name),
         contact: Value(model.contact),
         note: Value(model.note),
-        createdAt: model.createdAt != null
-            ? Value(model.createdAt!)
-            : const Value.absent(),
-        updatedAt: model.updatedAt != null
-            ? Value(model.updatedAt!)
-            : Value(DateTime.now()),
+        totalCreditLimit: Value(model.totalCreditLimit),
+        updatedAt: Value(model.updatedAt ?? DateTime.now()),
       );
 
   static void sanityCheck(db.Employer row) {
@@ -73,7 +71,8 @@ class EmployerRepository {
   Future<List<Project>> getProjectsByEmployer(int employerId) async {
     final rows = await (_db.select(
       _db.projects,
-    )..where((tbl) => tbl.employerId.equals(employerId))).get();
+    )..where((tbl) => tbl.employerId.equals(employerId)))
+        .get();
     return rows
         .map(
           (row) => Project(
@@ -93,7 +92,8 @@ class EmployerRepository {
   Future<List<Debt>> getDebtsByEmployer(int employerId) async {
     final rows = await (_db.select(
       _db.debts,
-    )..where((tbl) => tbl.employerId.equals(employerId))).get();
+    )..where((tbl) => tbl.employerId.equals(employerId)))
+        .get();
     return rows
         .map(
           (row) => Debt(
@@ -103,21 +103,20 @@ class EmployerRepository {
             amount: row.amount,
             borrowDate: row.borrowDate,
             dueDate: row.dueDate,
-            status: row.status,
+            status: DebtStatusX.fromString(row.status),
             description: row.description,
+            createdAt: row.createdAt,
           ),
         )
         .toList();
   }
 
   Future<int> getTotalDebtForEmployer(int employerId) async {
-    final query = await _db
-        .customSelect(
-          "SELECT COALESCE(SUM(amount),0) AS total FROM debts WHERE employer_id = ?1 AND status IN ('pending','partial')",
-          variables: [Variable<int>(employerId)],
-          readsFrom: {_db.debts},
-        )
-        .getSingle();
+    final query = await _db.customSelect(
+      "SELECT COALESCE(SUM(amount),0) AS total FROM debts WHERE employer_id = ?1 AND status IN ('pending','partial')",
+      variables: [Variable<int>(employerId)],
+      readsFrom: {_db.debts},
+    ).getSingle();
     return query.read<int>('total');
   }
 

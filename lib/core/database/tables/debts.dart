@@ -9,6 +9,7 @@ class Debts extends Table {
   IntColumn get amount => integer()();
   DateTimeColumn get borrowDate => dateTime()();
   DateTimeColumn get dueDate => dateTime()();
-  TextColumn get status => text()();
+  TextColumn get status => text().withDefault(const Constant('pending'))();
   TextColumn get description => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -12,34 +12,35 @@ class DebtRepository {
   final db.DebtDao _dao;
 
   Debt _mapDebt(db.Debt row) => Debt(
-    id: row.id,
-    employerId: row.employerId,
-    projectId: row.projectId,
-    amount: row.amount,
-    borrowDate: row.borrowDate,
-    dueDate: row.dueDate,
-    status: row.status,
-    description: row.description,
-  );
+        id: row.id,
+        employerId: row.employerId,
+        projectId: row.projectId,
+        amount: row.amount,
+        borrowDate: row.borrowDate,
+        dueDate: row.dueDate,
+        status: DebtStatusX.fromString(row.status),
+        description: row.description,
+        createdAt: row.createdAt,
+      );
 
   DebtPayment _mapPayment(db.DebtPayment row) => DebtPayment(
-    id: row.id,
-    debtId: row.debtId,
-    amount: row.amount,
-    paymentDate: row.paymentDate,
-    note: row.note,
-  );
+        id: row.id,
+        debtId: row.debtId,
+        amount: row.amount,
+        paymentDate: row.paymentDate,
+        note: row.note,
+      );
 
   db.DebtsCompanion _toCompanion(Debt model) => db.DebtsCompanion(
-    id: model.id != null ? Value(model.id!) : const Value.absent(),
-    employerId: Value(model.employerId),
-    projectId: Value(model.projectId),
-    amount: Value(model.amount),
-    borrowDate: Value(model.borrowDate),
-    dueDate: Value(model.dueDate),
-    status: Value(model.status),
-    description: Value(model.description),
-  );
+        id: model.id != null ? Value(model.id!) : const Value.absent(),
+        employerId: Value(model.employerId),
+        projectId: Value(model.projectId),
+        amount: Value(model.amount),
+        borrowDate: Value(model.borrowDate),
+        dueDate: Value(model.dueDate),
+        status: Value(model.status.name),
+        description: Value(model.description),
+      );
 
   Future<List<Debt>> fetchAll() async {
     final rows = await _dao.fetchAll();
@@ -47,25 +48,30 @@ class DebtRepository {
   }
 
   Future<List<Debt>> fetchPending() async {
-    final query =
-        await (_db.select(_db.debts)
-              ..where((tbl) => tbl.status.isIn(['pending', 'partial']))
-              ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)]))
-            .get();
+    final query = await (_db.select(_db.debts)
+          ..where(
+            (tbl) => tbl.status.isIn(
+              [DebtStatus.pending.name, DebtStatus.partial.name],
+            ),
+          )
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)]))
+        .get();
     return query.map(_mapDebt).toList();
   }
 
   Future<List<Debt>> fetchByEmployer(int employerId) async {
     final rows = await (_db.select(
       _db.debts,
-    )..where((tbl) => tbl.employerId.equals(employerId))).get();
+    )..where((tbl) => tbl.employerId.equals(employerId)))
+        .get();
     return rows.map(_mapDebt).toList();
   }
 
   Future<List<Debt>> fetchByProject(int projectId) async {
     final rows = await (_db.select(
       _db.debts,
-    )..where((tbl) => tbl.projectId.equals(projectId))).get();
+    )..where((tbl) => tbl.projectId.equals(projectId)))
+        .get();
     return rows.map(_mapDebt).toList();
   }
 
@@ -88,30 +94,32 @@ class DebtRepository {
     return rows.map(_mapPayment).toList();
   }
 
-  Future<int> insertDebtPayment(DebtPayment payment) => _dao.addPayment(
-    db.DebtPaymentsCompanion(
-      id: payment.id != null ? Value(payment.id!) : const Value.absent(),
-      debtId: Value(payment.debtId),
-      amount: Value(payment.amount),
-      paymentDate: Value(payment.paymentDate),
-      note: Value(payment.note),
-    ),
-  );
+  Future<int> insertDebtPayment(DebtPayment payment) async {
+    final id = await _dao.addPayment(
+      db.DebtPaymentsCompanion(
+        id: payment.id != null ? Value(payment.id!) : const Value.absent(),
+        debtId: Value(payment.debtId),
+        amount: Value(payment.amount),
+        paymentDate: Value(payment.paymentDate),
+        note: Value(payment.note),
+      ),
+    );
+    await _refreshDebtStatus(payment.debtId);
+    return id;
+  }
 
   Future<int> getRemainingAmount(int debtId) async {
-    final result = await _db
-        .customSelect(
-          '''
+    final result = await _db.customSelect(
+      '''
       SELECT d.amount - COALESCE(SUM(p.amount), 0) AS remaining
       FROM debts d
       LEFT JOIN debt_payments p ON p.debt_id = d.id
       WHERE d.id = ?1
       GROUP BY d.amount
       ''',
-          variables: [Variable<int>(debtId)],
-          readsFrom: {_db.debts, _db.debtPayments},
-        )
-        .getSingleOrNull();
+      variables: [Variable<int>(debtId)],
+      readsFrom: {_db.debts, _db.debtPayments},
+    ).getSingleOrNull();
     if (result == null) {
       final debt = await fetchById(debtId);
       return debt?.amount ?? 0;
@@ -123,22 +131,36 @@ class DebtRepository {
   Future<List<Debt>> getUpcomingDebts() async {
     final now = DateTime.now();
     final horizon = now.add(const Duration(days: 7));
-    final rows =
-        await (_db.select(_db.debts)
-              ..where(
-                (tbl) =>
-                    tbl.dueDate.isBetweenValues(now, horizon) &
-                    tbl.status.isIn(['pending', 'partial']),
-              )
-              ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)]))
-            .get();
+    final rows = await (_db.select(_db.debts)
+          ..where(
+            (tbl) =>
+                tbl.dueDate.isBetweenValues(now, horizon) &
+                tbl.status.isIn(
+                  [DebtStatus.pending.name, DebtStatus.partial.name],
+                ),
+          )
+          ..orderBy([(tbl) => OrderingTerm(expression: tbl.dueDate)]))
+        .get();
     return rows.map(_mapDebt).toList();
   }
 
-  Future<void> setStatus(int debtId, String status) {
+  Future<void> setStatus(int debtId, DebtStatus status) {
     return (_db.update(_db.debts)..where((tbl) => tbl.id.equals(debtId))).write(
-      db.DebtsCompanion(status: Value(status)),
+      db.DebtsCompanion(status: Value(status.name)),
     );
+  }
+
+  Future<void> _refreshDebtStatus(int debtId) async {
+    final debt = await fetchById(debtId);
+    if (debt == null) return;
+    final remaining = await getRemainingAmount(debtId);
+    if (remaining <= 0) {
+      await setStatus(debtId, DebtStatus.paid);
+    } else if (remaining < debt.amount) {
+      await setStatus(debtId, DebtStatus.partial);
+    } else {
+      await setStatus(debtId, DebtStatus.pending);
+    }
   }
 
   void mapperSanityCheckDebt(db.Debt row) {

@@ -15,80 +15,70 @@ class ReportRepository {
   final db.ReportDao _dao;
 
   WeeklyReport _mapSnapshot(db.WeeklySnapshot row) => WeeklyReport(
-    id: row.id,
-    weekStart: row.weekStart,
-    incomeTotal: row.incomeTotal,
-    expenseTotal: row.expenseTotal,
-    debtTotal: row.debtTotal,
-    payrollTotal: row.payrollTotal,
-    generatedAt: row.generatedAt,
-  );
+        id: row.id,
+        weekStart: row.weekStart,
+        incomeTotal: row.incomeTotal,
+        expenseTotal: row.expenseTotal,
+        debtTotal: row.debtTotal,
+        payrollTotal: row.payrollTotal,
+        generatedAt: row.generatedAt,
+      );
 
   Future<int> getWeeklyIncome(DateTime start, DateTime end) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
-          variables: [
-            const Variable<String>('income'),
-            Variable<DateTime>(start),
-            Variable<DateTime>(end),
-          ],
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
+      variables: [
+        const Variable<String>('income'),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getWeeklyExpense(DateTime start, DateTime end) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
-          variables: [
-            const Variable<String>('expense'),
-            Variable<DateTime>(start),
-            Variable<DateTime>(end),
-          ],
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM income_expense WHERE type = ?1 AND tx_date BETWEEN ?2 AND ?3',
+      variables: [
+        const Variable<String>('expense'),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getWeeklyPayroll(DateTime start, DateTime end) async {
-    final row = await _db
-        .customSelect(
-          '''
+    final row = await _db.customSelect(
+      '''
       SELECT COALESCE(SUM(wa.hours * w.daily_rate),0) AS total
       FROM worker_assignments wa
       INNER JOIN workers w ON w.id = wa.worker_id
       WHERE wa.work_date BETWEEN ?1 AND ?2
       ''',
-          variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-          readsFrom: {_db.workerAssignments, _db.workers},
-        )
-        .getSingle();
+      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
+      readsFrom: {_db.workerAssignments, _db.workers},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getWeeklyDebt(DateTime start, DateTime end) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(amount),0) AS total FROM debts WHERE borrow_date BETWEEN ?1 AND ?2',
-          variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-          readsFrom: {_db.debts},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM debts WHERE borrow_date BETWEEN ?1 AND ?2',
+      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
+      readsFrom: {_db.debts},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getWeeklyDebtPayments(DateTime start, DateTime end) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(amount),0) AS total FROM debt_payments WHERE payment_date BETWEEN ?1 AND ?2',
-          variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
-          readsFrom: {_db.debtPayments},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount),0) AS total FROM debt_payments WHERE payment_date BETWEEN ?1 AND ?2',
+      variables: [Variable<DateTime>(start), Variable<DateTime>(end)],
+      readsFrom: {_db.debtPayments},
+    ).getSingle();
     return row.read<int>('total');
   }
 
@@ -144,16 +134,15 @@ class ReportRepository {
     DateTime start,
     DateTime end,
   ) async {
-    final rows =
-        await (_db.select(_db.incomeExpense)
-              ..where((tbl) => tbl.txDate.isBetweenValues(start, end))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.incomeExpense)
+          ..where((tbl) => tbl.txDate.isBetweenValues(start, end))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.txDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows
         .map(
           (row) => IncomeExpenseModel(
@@ -174,16 +163,15 @@ class ReportRepository {
     DateTime start,
     DateTime end,
   ) async {
-    final rows =
-        await (_db.select(_db.workerAssignments)
-              ..where((tbl) => tbl.workDate.isBetweenValues(start, end))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.workerAssignments)
+          ..where((tbl) => tbl.workDate.isBetweenValues(start, end))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.workDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows
         .map(
           (row) => WorkerAssignmentModel(
@@ -201,7 +189,8 @@ class ReportRepository {
   Future<List<Debt>> getDebtsForWeek(DateTime start, DateTime end) async {
     final rows = await (_db.select(
       _db.debts,
-    )..where((tbl) => tbl.borrowDate.isBetweenValues(start, end))).get();
+    )..where((tbl) => tbl.borrowDate.isBetweenValues(start, end)))
+        .get();
     return rows
         .map(
           (row) => Debt(
@@ -211,8 +200,9 @@ class ReportRepository {
             amount: row.amount,
             borrowDate: row.borrowDate,
             dueDate: row.dueDate,
-            status: row.status,
+            status: DebtStatusX.fromString(row.status),
             description: row.description,
+            createdAt: row.createdAt,
           ),
         )
         .toList();
@@ -224,7 +214,8 @@ class ReportRepository {
   ) async {
     final rows = await (_db.select(
       _db.debtPayments,
-    )..where((tbl) => tbl.paymentDate.isBetweenValues(start, end))).get();
+    )..where((tbl) => tbl.paymentDate.isBetweenValues(start, end)))
+        .get();
     return rows
         .map(
           (row) => DebtPayment(

@@ -1,3 +1,5 @@
+import '../domain/debt.dart';
+
 class DebtFormState {
   final int? id;
   final int? employerId;
@@ -6,7 +8,8 @@ class DebtFormState {
   final DateTime borrowDate;
   final DateTime dueDate;
   final String description;
-  final String status;
+  final DebtStatus status;
+  final DateTime? createdAt;
   final bool loading;
   final bool saving;
   final String? error;
@@ -20,7 +23,8 @@ class DebtFormState {
     DateTime? borrowDate,
     DateTime? dueDate,
     this.description = '',
-    this.status = 'pending',
+    this.status = DebtStatus.pending,
+    this.createdAt,
     this.loading = false,
     this.saving = false,
     this.error,
@@ -39,7 +43,8 @@ class DebtFormState {
     DateTime? borrowDate,
     DateTime? dueDate,
     String? description,
-    String? status,
+    DebtStatus? status,
+    DateTime? createdAt,
     bool? loading,
     bool? saving,
     String? error,
@@ -55,6 +60,7 @@ class DebtFormState {
       dueDate: dueDate ?? this.dueDate,
       description: description ?? this.description,
       status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
       loading: loading ?? this.loading,
       saving: saving ?? this.saving,
       error: clearError ? null : (error ?? this.error),

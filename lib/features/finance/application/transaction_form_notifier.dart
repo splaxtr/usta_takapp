@@ -81,8 +81,8 @@ class TransactionFormNotifier extends StateNotifier<TransactionFormState> {
           (double.tryParse(state.amount.replaceAll(',', '.')) ?? 0) * 100;
       final model = IncomeExpenseModel(
         id: state.id,
-        projectId: state.projectId!,
-        employerId: state.employerId!,
+        projectId: state.projectId,
+        employerId: state.employerId,
         type: state.type,
         category: state.category,
         amount: amount.toInt(),

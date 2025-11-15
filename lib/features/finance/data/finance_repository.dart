@@ -10,15 +10,15 @@ class FinanceRepository {
   final db.AppDatabase _db;
 
   IncomeExpenseModel _map(db.IncomeExpenseData row) => IncomeExpenseModel(
-    id: row.id,
-    projectId: row.projectId,
-    employerId: row.employerId,
-    type: row.type,
-    category: row.category,
-    amount: row.amount,
-    description: row.description,
-    txDate: row.txDate,
-  );
+        id: row.id,
+        projectId: row.projectId,
+        employerId: row.employerId,
+        type: row.type,
+        category: row.category,
+        amount: row.amount,
+        description: row.description,
+        txDate: row.txDate,
+      );
 
   db.IncomeExpenseCompanion _toCompanion(IncomeExpenseModel model) =>
       db.IncomeExpenseCompanion(
@@ -33,33 +33,33 @@ class FinanceRepository {
       );
 
   Future<List<IncomeExpenseModel>> fetchAll() async {
-    final rows =
-        await (_db.select(_db.incomeExpense)..orderBy([
-              (tbl) =>
-                  OrderingTerm(expression: tbl.txDate, mode: OrderingMode.desc),
-            ]))
-            .get();
+    final rows = await (_db.select(_db.incomeExpense)
+          ..orderBy([
+            (tbl) =>
+                OrderingTerm(expression: tbl.txDate, mode: OrderingMode.desc),
+          ]))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<List<IncomeExpenseModel>> fetchByProject(int projectId) async {
-    final rows =
-        await (_db.select(_db.incomeExpense)
-              ..where((tbl) => tbl.projectId.equals(projectId))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.incomeExpense)
+          ..where((tbl) => tbl.projectId.equals(projectId))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.txDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<List<IncomeExpenseModel>> fetchByEmployer(int employerId) async {
     final rows = await (_db.select(
       _db.incomeExpense,
-    )..where((tbl) => tbl.employerId.equals(employerId))).get();
+    )..where((tbl) => tbl.employerId.equals(employerId)))
+        .get();
     return rows.map(_map).toList();
   }
 
@@ -67,44 +67,47 @@ class FinanceRepository {
     DateTime start,
     DateTime end,
   ) async {
-    final rows =
-        await (_db.select(_db.incomeExpense)
-              ..where((tbl) => tbl.txDate.isBetweenValues(start, end))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.incomeExpense)
+          ..where((tbl) => tbl.txDate.isBetweenValues(start, end))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.txDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<List<IncomeExpenseModel>> fetchIncome() async {
     final rows = await (_db.select(
       _db.incomeExpense,
-    )..where((tbl) => tbl.type.equals('income'))).get();
+    )..where((tbl) => tbl.type.equals('income')))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<List<IncomeExpenseModel>> fetchExpense() async {
     final rows = await (_db.select(
       _db.incomeExpense,
-    )..where((tbl) => tbl.type.equals('expense'))).get();
+    )..where((tbl) => tbl.type.equals('expense')))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<List<IncomeExpenseModel>> fetchByCategory(String category) async {
     final rows = await (_db.select(
       _db.incomeExpense,
-    )..where((tbl) => tbl.category.equals(category))).get();
+    )..where((tbl) => tbl.category.equals(category)))
+        .get();
     return rows.map(_map).toList();
   }
 
   Future<IncomeExpenseModel?> fetchById(int id) async {
     final row = await (_db.select(
       _db.incomeExpense,
-    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    )..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
     return row == null ? null : _map(row);
   }
 
@@ -120,44 +123,36 @@ class FinanceRepository {
       (_db.delete(_db.incomeExpense)..where((tbl) => tbl.id.equals(id))).go();
 
   Future<int> getTotalIncome() async {
-    final row = await _db
-        .customSelect(
-          "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = 'income'",
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = 'income'",
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getTotalExpense() async {
-    final row = await _db
-        .customSelect(
-          "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = 'expense'",
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE type = 'expense'",
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getTotalIncomeForProject(int projectId) async {
-    final row = await _db
-        .customSelect(
-          "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = 'income'",
-          variables: [Variable<int>(projectId)],
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = 'income'",
+      variables: [Variable<int>(projectId)],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getTotalExpenseForProject(int projectId) async {
-    final row = await _db
-        .customSelect(
-          "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = 'expense'",
-          variables: [Variable<int>(projectId)],
-          readsFrom: {_db.incomeExpense},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      "SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = 'expense'",
+      variables: [Variable<int>(projectId)],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
     return row.read<int>('total');
   }
 

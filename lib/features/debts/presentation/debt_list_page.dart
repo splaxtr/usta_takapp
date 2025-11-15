@@ -27,9 +27,10 @@ class _DebtListPageState extends ConsumerState<DebtListPage> {
     final displayedDebts = debtState.debts.where((debt) {
       switch (filter) {
         case 'pending':
-          return debt.status == 'pending' || debt.status == 'partial';
+          return debt.status == DebtStatus.pending ||
+              debt.status == DebtStatus.partial;
         case 'paid':
-          return debt.status == 'paid';
+          return debt.status == DebtStatus.paid;
         default:
           return true;
       }

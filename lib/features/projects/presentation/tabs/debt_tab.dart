@@ -76,7 +76,7 @@ class DebtTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text('Vade: $dueString'),
-                Text('Durum: ${debt.status}'),
+                Text('Durum: ${debt.status.label}'),
               ],
             ),
           ),
@@ -91,10 +91,10 @@ class DebtTile extends StatelessWidget {
                 onPressed: debt.id == null
                     ? null
                     : () => Navigator.pushNamed(
-                        context,
-                        '/debt/detail',
-                        arguments: debt.id,
-                      ),
+                          context,
+                          '/debt/detail',
+                          arguments: debt.id,
+                        ),
                 icon: const Icon(Icons.open_in_new),
               ),
             ],

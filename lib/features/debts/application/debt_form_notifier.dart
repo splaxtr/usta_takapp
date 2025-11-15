@@ -59,6 +59,7 @@ class DebtFormNotifier extends StateNotifier<DebtFormState> {
         dueDate: debt.dueDate,
         description: debt.description ?? '',
         status: debt.status,
+        createdAt: debt.createdAt,
         revision: state.revision + 1,
       );
     } catch (e) {
@@ -79,8 +80,9 @@ class DebtFormNotifier extends StateNotifier<DebtFormState> {
         amount: amount.toInt(),
         borrowDate: state.borrowDate,
         dueDate: state.dueDate,
-        status: state.id == null ? 'pending' : state.status,
+        status: state.id == null ? DebtStatus.pending : state.status,
         description: state.description.isEmpty ? null : state.description,
+        createdAt: state.createdAt ?? DateTime.now(),
       );
       if (state.id == null) {
         await _repo.insertDebt(debt);

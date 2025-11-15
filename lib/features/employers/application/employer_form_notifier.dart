@@ -57,6 +57,8 @@ class EmployerFormNotifier extends StateNotifier<EmployerFormState> {
         name: employer.name,
         phone: employer.contact ?? '',
         note: employer.note ?? '',
+        totalCreditLimit: employer.totalCreditLimit.toString(),
+        createdAt: employer.createdAt,
         revision: state.revision + 1,
       );
     } catch (e) {
@@ -68,11 +70,15 @@ class EmployerFormNotifier extends StateNotifier<EmployerFormState> {
     if (!state.canSubmit) return false;
     try {
       state = state.copyWith(saving: true, clearError: true);
+      final limit = int.tryParse(state.totalCreditLimit) ?? 0;
       final employer = Employer(
         id: state.id,
         name: state.name.trim(),
         contact: state.phone.trim().isEmpty ? null : state.phone.trim(),
         note: state.note.trim().isEmpty ? null : state.note.trim(),
+        totalCreditLimit: limit,
+        createdAt: state.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       if (state.id == null) {
         await _repo.insert(employer);

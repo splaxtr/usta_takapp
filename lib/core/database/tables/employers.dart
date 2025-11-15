@@ -5,6 +5,7 @@ class Employers extends Table {
   TextColumn get name => text()();
   TextColumn get contact => text().nullable()();
   TextColumn get note => text().nullable()();
+  IntColumn get totalCreditLimit => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
 }

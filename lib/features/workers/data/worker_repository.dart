@@ -13,13 +13,13 @@ class WorkerRepository {
   final db.WorkerDao _dao;
 
   WorkerModel _mapWorker(db.Worker row) => WorkerModel(
-    id: row.id,
-    fullName: row.fullName,
-    dailyRate: row.dailyRate,
-    phone: row.phone,
-    note: row.note,
-    active: row.active,
-  );
+        id: row.id,
+        fullName: row.fullName,
+        dailyRate: row.dailyRate,
+        phone: row.phone,
+        note: row.note,
+        active: row.active,
+      );
 
   WorkerAssignmentModel _mapAssignment(db.WorkerAssignment row) =>
       WorkerAssignmentModel(
@@ -32,14 +32,14 @@ class WorkerRepository {
       );
 
   PaymentModel _mapPayment(db.Payment row) => PaymentModel(
-    id: row.id,
-    workerId: row.workerId,
-    projectId: row.projectId,
-    amount: row.amount,
-    paymentDate: row.paymentDate,
-    method: row.method,
-    note: row.note,
-  );
+        id: row.id,
+        workerId: row.workerId,
+        projectId: row.projectId,
+        amount: row.amount,
+        paymentDate: row.paymentDate,
+        method: row.method,
+        note: row.note,
+      );
 
   Future<List<WorkerModel>> fetchAll() async {
     final rows = await _dao.fetchWorkers();
@@ -49,7 +49,8 @@ class WorkerRepository {
   Future<List<WorkerModel>> fetchActive() async {
     final rows = await (_db.select(
       _db.workers,
-    )..where((tbl) => tbl.active.equals(true))).get();
+    )..where((tbl) => tbl.active.equals(true)))
+        .get();
     return rows.map(_mapWorker).toList();
   }
 
@@ -93,31 +94,26 @@ class WorkerRepository {
   Future<List<WorkerAssignmentModel>> getAssignmentsForWorker(
     int workerId,
   ) async {
-    final rows =
-        await (_db.select(_db.workerAssignments)
-              ..where((tbl) => tbl.workerId.equals(workerId))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.workerAssignments)
+          ..where((tbl) => tbl.workerId.equals(workerId))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.workDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows.map(_mapAssignment).toList();
   }
 
   Future<int> insertAssignment(WorkerAssignmentModel assignment) {
-    return _db
-        .into(_db.workerAssignments)
-        .insert(
+    return _db.into(_db.workerAssignments).insert(
           db.WorkerAssignmentsCompanion(
             workerId: Value(assignment.workerId),
             projectId: Value(assignment.projectId),
             workDate: Value(assignment.workDate),
             hours: Value(assignment.hours),
-            overtimeHours: assignment.overtimeHours != null
-                ? Value(assignment.overtimeHours!)
-                : const Value.absent(),
+            overtimeHours: Value(assignment.overtimeHours),
           ),
         );
   }
@@ -125,27 +121,25 @@ class WorkerRepository {
   Future<int> deleteAssignment(int id) {
     return (_db.delete(
       _db.workerAssignments,
-    )..where((tbl) => tbl.id.equals(id))).go();
+    )..where((tbl) => tbl.id.equals(id)))
+        .go();
   }
 
   Future<List<PaymentModel>> getPaymentsForWorker(int workerId) async {
-    final rows =
-        await (_db.select(_db.payments)
-              ..where((tbl) => tbl.workerId.equals(workerId))
-              ..orderBy([
-                (tbl) => OrderingTerm(
+    final rows = await (_db.select(_db.payments)
+          ..where((tbl) => tbl.workerId.equals(workerId))
+          ..orderBy([
+            (tbl) => OrderingTerm(
                   expression: tbl.paymentDate,
                   mode: OrderingMode.desc,
                 ),
-              ]))
-            .get();
+          ]))
+        .get();
     return rows.map(_mapPayment).toList();
   }
 
   Future<int> insertPayment(PaymentModel payment) {
-    return _db
-        .into(_db.payments)
-        .insert(
+    return _db.into(_db.payments).insert(
           db.PaymentsCompanion(
             workerId: Value(payment.workerId),
             projectId: Value(payment.projectId),
@@ -158,40 +152,34 @@ class WorkerRepository {
   }
 
   Future<int> getTotalWorkedDays(int workerId) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(hours), 0) AS total FROM worker_assignments WHERE worker_id = ?1',
-          variables: [Variable<int>(workerId)],
-          readsFrom: {_db.workerAssignments},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(hours), 0) AS total FROM worker_assignments WHERE worker_id = ?1',
+      variables: [Variable<int>(workerId)],
+      readsFrom: {_db.workerAssignments},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getTotalWorkedAmount(int workerId) async {
-    final row = await _db
-        .customSelect(
-          '''
+    final row = await _db.customSelect(
+      '''
       SELECT COALESCE(SUM(wa.hours * w.daily_rate), 0) AS total
       FROM worker_assignments wa
       INNER JOIN workers w ON w.id = wa.worker_id
       WHERE wa.worker_id = ?1
       ''',
-          variables: [Variable<int>(workerId)],
-          readsFrom: {_db.workerAssignments, _db.workers},
-        )
-        .getSingle();
+      variables: [Variable<int>(workerId)],
+      readsFrom: {_db.workerAssignments, _db.workers},
+    ).getSingle();
     return row.read<int>('total');
   }
 
   Future<int> getTotalPaidAmount(int workerId) async {
-    final row = await _db
-        .customSelect(
-          'SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE worker_id = ?1',
-          variables: [Variable<int>(workerId)],
-          readsFrom: {_db.payments},
-        )
-        .getSingle();
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE worker_id = ?1',
+      variables: [Variable<int>(workerId)],
+      readsFrom: {_db.payments},
+    ).getSingle();
     return row.read<int>('total');
   }
 

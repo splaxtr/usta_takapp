@@ -8,7 +8,8 @@ class Employer {
   final String name;
   final String? contact;
   final String? note;
-  final DateTime? createdAt;
+  final int totalCreditLimit;
+  final DateTime createdAt;
   final DateTime? updatedAt;
 
   const Employer({
@@ -16,7 +17,8 @@ class Employer {
     required this.name,
     this.contact,
     this.note,
-    this.createdAt,
+    this.totalCreditLimit = 0,
+    required this.createdAt,
     this.updatedAt,
   });
 
@@ -25,40 +27,41 @@ class Employer {
     Object? id = _undefined,
     Object? contact = _undefined,
     Object? note = _undefined,
+    int? totalCreditLimit,
     Object? createdAt = _undefined,
     Object? updatedAt = _undefined,
-  }) => Employer(
-    id: id == _undefined ? this.id : id as int?,
-    name: name ?? this.name,
-    contact: contact == _undefined ? this.contact : contact as String?,
-    note: note == _undefined ? this.note : note as String?,
-    createdAt: createdAt == _undefined
-        ? this.createdAt
-        : createdAt as DateTime?,
-    updatedAt: updatedAt == _undefined
-        ? this.updatedAt
-        : updatedAt as DateTime?,
-  );
+  }) =>
+      Employer(
+        id: id == _undefined ? this.id : id as int?,
+        name: name ?? this.name,
+        contact: contact == _undefined ? this.contact : contact as String?,
+        note: note == _undefined ? this.note : note as String?,
+        totalCreditLimit: totalCreditLimit ?? this.totalCreditLimit,
+        createdAt:
+            createdAt == _undefined ? this.createdAt : createdAt as DateTime,
+        updatedAt:
+            updatedAt == _undefined ? this.updatedAt : updatedAt as DateTime?,
+      );
 
   factory Employer.fromJson(Map<String, dynamic> json) => Employer(
-    id: json['id'] as int?,
-    name: json['name'] as String,
-    contact: json['contact'] as String?,
-    note: json['note'] as String?,
-    createdAt: json['createdAt'] != null
-        ? DateTime.parse(json['createdAt'] as String)
-        : null,
-    updatedAt: json['updatedAt'] != null
-        ? DateTime.parse(json['updatedAt'] as String)
-        : null,
-  );
+        id: json['id'] as int?,
+        name: json['name'] as String,
+        contact: json['contact'] as String?,
+        note: json['note'] as String?,
+        totalCreditLimit: json['totalCreditLimit'] as int? ?? 0,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.parse(json['updatedAt'] as String)
+            : null,
+      );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'contact': contact,
-    'note': note,
-    'createdAt': createdAt?.toIso8601String(),
-    'updatedAt': updatedAt?.toIso8601String(),
-  };
+        'id': id,
+        'name': name,
+        'contact': contact,
+        'note': note,
+        'totalCreditLimit': totalCreditLimit,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+      };
 }

@@ -5,7 +5,7 @@ import 'projects.dart';
 class Payments extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get workerId => integer().references(Workers, #id)();
-  IntColumn get projectId => integer().references(Projects, #id)();
+  IntColumn get projectId => integer().references(Projects, #id).nullable()();
   IntColumn get amount => integer()();
   DateTimeColumn get paymentDate => dateTime()();
   TextColumn get method => text()();

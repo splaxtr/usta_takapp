@@ -8,15 +8,15 @@ import '../domain/debt_payment.dart';
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.status});
 
-  final String status;
+  final DebtStatus status;
 
   Color get _color {
     switch (status) {
-      case 'partial':
+      case DebtStatus.partial:
         return Colors.blueAccent;
-      case 'paid':
+      case DebtStatus.paid:
         return Colors.greenAccent;
-      default:
+      case DebtStatus.pending:
         return Colors.orangeAccent;
     }
   }
@@ -25,7 +25,7 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(
       backgroundColor: _color.withOpacity(0.2),
-      label: Text(status.toUpperCase(), style: TextStyle(color: _color)),
+      label: Text(status.label.toUpperCase(), style: TextStyle(color: _color)),
     );
   }
 }

@@ -9,7 +9,7 @@ class WorkerAssignmentModel {
   final int projectId;
   final DateTime workDate;
   final int hours;
-  final int? overtimeHours;
+  final int overtimeHours;
 
   const WorkerAssignmentModel({
     this.id,
@@ -17,7 +17,7 @@ class WorkerAssignmentModel {
     required this.projectId,
     required this.workDate,
     required this.hours,
-    this.overtimeHours,
+    this.overtimeHours = 0,
   });
 
   WorkerAssignmentModel copyWith({
@@ -27,16 +27,17 @@ class WorkerAssignmentModel {
     int? hours,
     Object? id = _undefined,
     Object? overtimeHours = _undefined,
-  }) => WorkerAssignmentModel(
-    id: id == _undefined ? this.id : id as int?,
-    workerId: workerId ?? this.workerId,
-    projectId: projectId ?? this.projectId,
-    workDate: workDate ?? this.workDate,
-    hours: hours ?? this.hours,
-    overtimeHours: overtimeHours == _undefined
-        ? this.overtimeHours
-        : overtimeHours as int?,
-  );
+  }) =>
+      WorkerAssignmentModel(
+        id: id == _undefined ? this.id : id as int?,
+        workerId: workerId ?? this.workerId,
+        projectId: projectId ?? this.projectId,
+        workDate: workDate ?? this.workDate,
+        hours: hours ?? this.hours,
+        overtimeHours: overtimeHours == _undefined
+            ? this.overtimeHours
+            : overtimeHours as int,
+      );
 
   factory WorkerAssignmentModel.fromJson(Map<String, dynamic> json) =>
       WorkerAssignmentModel(
@@ -45,15 +46,15 @@ class WorkerAssignmentModel {
         projectId: json['projectId'] as int,
         workDate: DateTime.parse(json['workDate'] as String),
         hours: json['hours'] as int,
-        overtimeHours: json['overtimeHours'] as int?,
+        overtimeHours: json['overtimeHours'] as int? ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'workerId': workerId,
-    'projectId': projectId,
-    'workDate': workDate.toIso8601String(),
-    'hours': hours,
-    'overtimeHours': overtimeHours,
-  };
+        'id': id,
+        'workerId': workerId,
+        'projectId': projectId,
+        'workDate': workDate.toIso8601String(),
+        'hours': hours,
+        'overtimeHours': overtimeHours,
+      };
 }

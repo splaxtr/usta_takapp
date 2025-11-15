@@ -11,15 +11,15 @@ import 'employer_state.dart';
 
 final employerNotifierProvider =
     StateNotifierProvider<EmployerNotifier, EmployerState>((ref) {
-      final repo = ref.read(employerRepositoryProvider);
-      final projectRepo = ref.read(projectRepositoryProvider);
-      final debtRepo = ref.read(debtRepositoryProvider);
-      return EmployerNotifier(repo, projectRepo, debtRepo)..loadEmployers();
-    });
+  final repo = ref.read(employerRepositoryProvider);
+  final projectRepo = ref.read(projectRepositoryProvider);
+  final debtRepo = ref.read(debtRepositoryProvider);
+  return EmployerNotifier(repo, projectRepo, debtRepo)..loadEmployers();
+});
 
 class EmployerNotifier extends StateNotifier<EmployerState> {
   EmployerNotifier(this._repo, this._projectRepo, this._debtRepo)
-    : super(EmployerState.initial());
+      : super(EmployerState.initial());
 
   final EmployerRepository _repo;
   final ProjectRepository _projectRepo;
@@ -43,7 +43,7 @@ class EmployerNotifier extends StateNotifier<EmployerState> {
 
       final debtTotals = <int, int>{};
       for (final debt in debts) {
-        if (debt.status == 'paid') continue;
+        if (debt.status == DebtStatus.paid) continue;
         debtTotals.update(
           debt.employerId,
           (value) => value + debt.amount,

@@ -63,10 +63,5 @@ class TransactionFormState {
     );
   }
 
-  bool get canSubmit =>
-      !loading &&
-      !saving &&
-      amount.trim().isNotEmpty &&
-      employerId != null &&
-      projectId != null;
+  bool get canSubmit => !loading && !saving && amount.trim().isNotEmpty;
 }

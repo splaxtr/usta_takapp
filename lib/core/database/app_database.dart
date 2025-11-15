@@ -53,5 +53,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) async => m.createAllTables(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(employers, employers.totalCreditLimit);
+            await m.addColumn(debts, debts.createdAt);
+          }
+        },
+      );
 }

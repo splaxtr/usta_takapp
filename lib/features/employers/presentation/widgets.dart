@@ -116,8 +116,8 @@ class EmployerDebtTile extends StatelessWidget {
     final badgeColor = remaining <= 3
         ? Colors.orangeAccent
         : remaining <= 7
-        ? Colors.blueAccent
-        : Colors.grey;
+            ? Colors.blueAccent
+            : Colors.grey;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,12 +132,12 @@ class EmployerDebtTile extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
-              Chip(label: Text(debt.status)),
+              Chip(label: Text(debt.status.label)),
             ],
           ),
           const SizedBox(height: 8),
           Text('Vade: ${debt.dueDate.toLocal().toString().split(' ').first}'),
-          Text('Durum: ${debt.status}'),
+          Text('Durum: ${debt.status.label}'),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

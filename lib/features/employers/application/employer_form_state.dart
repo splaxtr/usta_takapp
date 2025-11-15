@@ -4,6 +4,7 @@ class EmployerFormState {
   final String phone;
   final String note;
   final String totalCreditLimit;
+  final DateTime? createdAt;
   final bool loading;
   final bool saving;
   final String? error;
@@ -15,6 +16,7 @@ class EmployerFormState {
     this.phone = '',
     this.note = '',
     this.totalCreditLimit = '0',
+    this.createdAt,
     this.loading = false,
     this.saving = false,
     this.error,
@@ -29,6 +31,7 @@ class EmployerFormState {
     String? phone,
     String? note,
     String? totalCreditLimit,
+    DateTime? createdAt,
     bool? loading,
     bool? saving,
     String? error,
@@ -41,6 +44,7 @@ class EmployerFormState {
       phone: phone ?? this.phone,
       note: note ?? this.note,
       totalCreditLimit: totalCreditLimit ?? this.totalCreditLimit,
+      createdAt: createdAt ?? this.createdAt,
       loading: loading ?? this.loading,
       saving: saving ?? this.saving,
       error: clearError ? null : (error ?? this.error),
