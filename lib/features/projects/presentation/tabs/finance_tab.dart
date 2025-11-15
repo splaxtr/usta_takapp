@@ -1,91 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../finance/application/finance_notifier.dart';
+import '../../../finance/presentation/add_transaction_modal.dart';
+import '../../../finance/presentation/widgets.dart';
 import '../../application/project_notifier.dart';
-import '../../../finance/domain/income_expense.dart';
 
-class ProjectFinanceTab extends ConsumerWidget {
+class ProjectFinanceTab extends ConsumerStatefulWidget {
   const ProjectFinanceTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(projectNotifierProvider);
-    final items = state.transactions;
+  ConsumerState<ProjectFinanceTab> createState() => _ProjectFinanceTabState();
+}
 
-    if (items.isEmpty) {
-      return const Center(child: Text('Bu projeye ait işlem bulunmuyor'));
+class _ProjectFinanceTabState extends ConsumerState<ProjectFinanceTab> {
+  int? lastProjectId;
+
+  @override
+  Widget build(BuildContext context) {
+    final projectState = ref.watch(projectNotifierProvider);
+    final financeState = ref.watch(financeNotifierProvider);
+    final project = projectState.selectedProject;
+    final projectId = project?.id;
+
+    if (projectId != null && projectId != lastProjectId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(financeNotifierProvider.notifier).loadByProject(projectId);
+      });
+      lastProjectId = projectId;
     }
 
+    if (projectId == null) {
+      return const Center(child: Text('Proje seçilmedi'));
+    }
+
+    if (financeState.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final items = financeState.transactions;
     return Column(
       children: [
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (_, index) => FinanceTile(model: items[index]),
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemCount: items.length,
-          ),
+          child: items.isEmpty
+              ? const Center(child: Text('Bu projede işlem yok'))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (_, index) => TransactionTile(
+                    model: items[index],
+                    employerName: null,
+                    projectName: project.title,
+                  ),
+                ),
         ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: bağlanacak modal görevleri ileride yapılacak
-            },
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => AddTransactionModal(
+                initialProjectId: project.id,
+                initialEmployerId: project.employerId,
+              ),
+            ),
             icon: const Icon(Icons.add),
             label: const Text('İşlem Ekle'),
           ),
         ),
       ],
-    );
-  }
-}
-
-class FinanceTile extends StatelessWidget {
-  const FinanceTile({super.key, required this.model});
-
-  final IncomeExpenseModel model;
-
-  @override
-  Widget build(BuildContext context) {
-    final isIncome = model.type == 'income';
-    final color = isIncome ? Colors.greenAccent : Colors.redAccent;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.03),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: color,
-            child: Icon(
-              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  model.category,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(model.txDate.toLocal().toString().split(' ').first),
-              ],
-            ),
-          ),
-          Text(
-            '${isIncome ? '+' : '-'}${(model.amount / 100).toStringAsFixed(2)} ₺',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: color),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -27,7 +27,7 @@ final projectRepositoryProvider = Provider<ProjectRepository>((ref) {
 
 final financeRepositoryProvider = Provider<FinanceRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return FinanceRepository(db.financeDao);
+  return FinanceRepository(db);
 });
 
 final debtRepositoryProvider = Provider<DebtRepository>((ref) {

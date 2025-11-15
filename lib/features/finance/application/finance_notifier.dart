@@ -5,39 +5,108 @@ import '../data/finance_repository.dart';
 import '../domain/income_expense.dart';
 import 'finance_state.dart';
 
-final financeNotifierProvider = StateNotifierProvider.family<FinanceNotifier, FinanceState, int>((ref, projectId) {
-  final repo = ref.watch(financeRepositoryProvider);
-  return FinanceNotifier(repo, projectId)..load();
-});
+final financeNotifierProvider =
+    StateNotifierProvider<FinanceNotifier, FinanceState>((ref) {
+      final repo = ref.watch(financeRepositoryProvider);
+      return FinanceNotifier(repo)..loadAll();
+    });
 
 class FinanceNotifier extends StateNotifier<FinanceState> {
-  FinanceNotifier(this._repo, this._projectId) : super(FinanceState.initial());
+  FinanceNotifier(this._repository) : super(FinanceState.initial());
 
-  final FinanceRepository _repo;
-  final int _projectId;
+  final FinanceRepository _repository;
+  String _mode = 'all';
+  int? _projectId;
+  String? _category;
+  DateTimeRange? _dateRange;
 
-  Future<void> load() async {
+  Future<void> loadAll() async {
+    _mode = 'all';
+    _projectId = null;
+    _category = null;
+    _dateRange = null;
+    await _loadTransactions(() => _repository.fetchAll());
+  }
+
+  Future<void> loadIncome() async {
+    _mode = 'income';
+    await _loadTransactions(() => _repository.fetchIncome());
+  }
+
+  Future<void> loadExpense() async {
+    _mode = 'expense';
+    await _loadTransactions(() => _repository.fetchExpense());
+  }
+
+  Future<void> loadByProject(int projectId) async {
+    _mode = 'project';
+    _projectId = projectId;
+    await _loadTransactions(() => _repository.fetchByProject(projectId));
+  }
+
+  Future<void> loadByCategory(String category) async {
+    _mode = 'category';
+    _category = category;
+    await _loadTransactions(() => _repository.fetchByCategory(category));
+  }
+
+  Future<void> loadByDateRange(DateTimeRange range) async {
+    _mode = 'date';
+    _dateRange = range;
+    await _loadTransactions(
+      () => _repository.fetchByDateRange(range.start, range.end),
+    );
+  }
+
+  Future<void> addTransaction(IncomeExpenseModel model) async {
+    await _repository.insertTransaction(model);
+    await reloadTotals();
+    await _reloadCurrentView();
+  }
+
+  Future<void> reloadTotals() async {
+    final totals = await Future.wait([
+      _repository.getTotalIncome(),
+      _repository.getTotalExpense(),
+    ]);
+    state = state.copyWith(totalIncome: totals[0], totalExpense: totals[1]);
+  }
+
+  Future<void> _loadTransactions(
+    Future<List<IncomeExpenseModel>> Function() loader,
+  ) async {
     try {
       state = state.copyWith(loading: true, error: null);
-      final result = await _repo.fetchByProject(_projectId);
-      state = state.copyWith(loading: false, data: result);
+      final results = await loader();
+      final totals = await Future.wait([
+        _repository.getTotalIncome(),
+        _repository.getTotalExpense(),
+      ]);
+      state = state.copyWith(
+        loading: false,
+        transactions: results,
+        totalIncome: totals[0],
+        totalExpense: totals[1],
+      );
     } catch (e) {
       state = state.copyWith(loading: false, error: e.toString());
     }
   }
 
-  Future<void> addTransaction(IncomeExpenseModel model) async {
-    await _repo.insert(model);
-    await load();
-  }
-
-  Future<void> updateTransaction(IncomeExpenseModel model) async {
-    await _repo.update(model);
-    await load();
-  }
-
-  Future<void> deleteTransaction(int id) async {
-    await _repo.delete(id);
-    await load();
+  Future<void> _reloadCurrentView() {
+    switch (_mode) {
+      case 'income':
+        return loadIncome();
+      case 'expense':
+        return loadExpense();
+      case 'project':
+        return loadByProject(_projectId!);
+      case 'category':
+        return loadByCategory(_category!);
+      case 'date':
+        return loadByDateRange(_dateRange!);
+      default:
+        return loadAll();
+    }
   }
 }
