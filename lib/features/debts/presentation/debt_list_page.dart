@@ -6,7 +6,6 @@ import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/debt_notifier.dart';
 import '../domain/debt.dart';
-import 'add_debt_modal.dart';
 import 'widgets.dart';
 
 class DebtListPage extends ConsumerStatefulWidget {
@@ -100,10 +99,10 @@ class _DebtListPageState extends ConsumerState<DebtListPage> {
                       onTap: debt.id == null
                           ? null
                           : () => Navigator.pushNamed(
-                              context,
-                              '/debt/detail',
-                              arguments: debt.id,
-                            ),
+                                context,
+                                '/debt/detail',
+                                arguments: debt.id,
+                              ),
                     );
                   },
                 );
@@ -114,11 +113,7 @@ class _DebtListPageState extends ConsumerState<DebtListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => const AddDebtModal(),
-          );
+          Navigator.pushNamed(context, '/debt/form');
         },
         child: const Icon(Icons.add_alert),
       ),

@@ -6,7 +6,6 @@ import '../../employers/application/employer_notifier.dart';
 import '../../projects/application/project_notifier.dart';
 import '../application/finance_notifier.dart';
 import '../presentation/finance_categories.dart';
-import 'add_transaction_modal.dart';
 import 'widgets.dart';
 
 class TransactionListPage extends ConsumerStatefulWidget {
@@ -174,11 +173,9 @@ class _TransactionListPageState extends ConsumerState<TransactionListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (_) => const AddTransactionModal(),
-        ),
+        onPressed: () {
+          Navigator.pushNamed(context, '/transaction/form');
+        },
         child: const Icon(Icons.add),
       ),
     );

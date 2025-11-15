@@ -9,7 +9,6 @@ import '../application/worker_state.dart';
 import '../domain/worker_assignment.dart';
 import '../domain/payment.dart';
 import 'add_workday_modal.dart';
-import 'add_worker_payment_modal.dart';
 import 'worker_widgets.dart';
 
 class WorkerDetailPage extends ConsumerStatefulWidget {
@@ -49,9 +48,8 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
     }
 
     String projectNameFor(int projectId) {
-      final match = projectState.projects
-          .where((p) => p.id == projectId)
-          .toList();
+      final match =
+          projectState.projects.where((p) => p.id == projectId).toList();
       return match.isNotEmpty ? match.first.title : 'Proje';
     }
 
@@ -106,9 +104,8 @@ class _WorkerSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remainingColor = state.remainingAmount > 0
-        ? Colors.redAccent
-        : Colors.greenAccent;
+    final remainingColor =
+        state.remainingAmount > 0 ? Colors.redAccent : Colors.greenAccent;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -215,11 +212,13 @@ class WorkerPaymentsSection extends StatelessWidget {
               ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => AddWorkerPaymentModal(workerId: workerId),
-              ),
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/payment/form',
+                  arguments: {'workerId': workerId},
+                );
+              },
               icon: const Icon(Icons.payments),
               label: const Text('Ödeme Ekle'),
             ),

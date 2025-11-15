@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/worker_notifier.dart';
 import '../domain/worker.dart';
-import 'add_worker_modal.dart';
 import 'worker_widgets.dart';
 
 class WorkerListPage extends ConsumerStatefulWidget {
@@ -109,11 +108,9 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (_) => const AddWorkerModal(),
-        ),
+        onPressed: () {
+          Navigator.pushNamed(context, '/worker/form');
+        },
         child: const Icon(Icons.person_add_alt),
       ),
     );

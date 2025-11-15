@@ -24,32 +24,34 @@ class ProjectListPage extends ConsumerWidget {
       body: state.loading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (_, index) {
-                final project = state.projects[index];
-                final summary = project.id != null
-                    ? state.projectSummaries[project.id!]
-                    : null;
-                return ProjectCard(
-                  project: project,
-                  summary: summary,
-                  onTap: () {
-                    if (project.id == null) return;
-                    Navigator.pushNamed(
-                      context,
-                      '/project/detail',
-                      arguments: project.id,
+              ? Center(child: Text(state.error!))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (_, index) {
+                    final project = state.projects[index];
+                    final summary = project.id != null
+                        ? state.projectSummaries[project.id!]
+                        : null;
+                    return ProjectCard(
+                      project: project,
+                      summary: summary,
+                      onTap: () {
+                        if (project.id == null) return;
+                        Navigator.pushNamed(
+                          context,
+                          '/project/detail',
+                          arguments: project.id,
+                        );
+                      },
                     );
                   },
-                );
-              },
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemCount: state.projects.length,
-            ),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemCount: state.projects.length,
+                ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/project/form');
+        },
         child: const Icon(Icons.add_box),
       ),
     );
@@ -70,12 +72,10 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final incomeText = summary != null
-        ? (summary!.income / 100).toStringAsFixed(2)
-        : '-';
-    final expenseText = summary != null
-        ? (summary!.expense / 100).toStringAsFixed(2)
-        : '-';
+    final incomeText =
+        summary != null ? (summary!.income / 100).toStringAsFixed(2) : '-';
+    final expenseText =
+        summary != null ? (summary!.expense / 100).toStringAsFixed(2) : '-';
     return AppCard(
       onTap: onTap,
       child: Column(

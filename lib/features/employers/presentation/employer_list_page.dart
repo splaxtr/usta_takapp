@@ -81,21 +81,7 @@ class _EmployerListPageState extends ConsumerState<EmployerListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Yeni İşveren'),
-              content: const Text(
-                'Form entegrasyonu sonraki sprintte eklenecek.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Kapat'),
-                ),
-              ],
-            ),
-          );
+          Navigator.pushNamed(context, '/employer/form');
         },
         child: const Icon(Icons.add_business),
       ),
