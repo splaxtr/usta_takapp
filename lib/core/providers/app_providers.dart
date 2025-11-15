@@ -7,6 +7,7 @@ import '../../features/finance/data/finance_repository.dart';
 import '../../features/projects/data/project_repository.dart';
 import '../../features/reports/data/report_repository.dart';
 import '../../features/workers/data/worker_repository.dart';
+import '../../features/dashboard/data/dashboard_repository.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -42,4 +43,9 @@ final workerRepositoryProvider = Provider<WorkerRepository>((ref) {
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   final db = ref.watch(databaseProvider);
   return ReportRepository(db.reportDao);
+});
+
+final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return DashboardRepository(db);
 });
