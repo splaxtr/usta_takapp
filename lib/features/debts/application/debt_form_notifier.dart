@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../dashboard/application/dashboard_notifier.dart';
 import '../../employers/data/employer_repository.dart';
+import '../../projects/application/project_notifier.dart';
 import '../data/debt_repository.dart';
 import '../domain/debt.dart';
 import 'debt_form_state.dart';
@@ -134,6 +135,11 @@ class DebtFormNotifier extends StateNotifier<DebtFormState> {
         await _repo.updateDebt(debt);
       }
       await _ref.read(debtNotifierProvider.notifier).loadDebts();
+      if (state.projectId != null) {
+        await _ref
+            .read(projectNotifierProvider.notifier)
+            .loadProjectDetail(state.projectId!);
+      }
       await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;

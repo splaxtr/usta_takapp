@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/project_notifier.dart';
+import '../../domain/project_summary.dart';
 
 class ProjectSummaryTab extends ConsumerWidget {
   const ProjectSummaryTab({super.key, required this.projectId});
@@ -16,8 +17,13 @@ class ProjectSummaryTab extends ConsumerWidget {
       return const Center(child: Text('Proje seçili değil'));
     }
 
+    final summary = state.summary ?? state.projectSummaries[projectId];
+    if (summary == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final budget = project.budget.toDouble();
-    final spent = state.expenseTotal.toDouble();
+    final spent = summary.totalCost.toDouble();
     final progress = budget == 0 ? 0.0 : (spent / budget).clamp(0, 1);
 
     return SingleChildScrollView(
@@ -25,26 +31,7 @@ class ProjectSummaryTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SummaryStatCard(
-                label: 'Gelir',
-                amount: state.incomeTotal,
-                color: Colors.greenAccent,
-              ),
-              SummaryStatCard(
-                label: 'Gider',
-                amount: state.expenseTotal,
-                color: Colors.redAccent,
-              ),
-              SummaryStatCard(
-                label: 'Net',
-                amount: state.netBalance,
-                color: Colors.blueAccent,
-              ),
-            ],
-          ),
+          _StatsGrid(summary: summary),
           const SizedBox(height: 24),
           Text(
             'Bütçe Kullanımı',
@@ -58,9 +45,12 @@ class ProjectSummaryTab extends ConsumerWidget {
             color: Colors.orangeAccent,
           ),
           const SizedBox(height: 8),
-          Text(
-            'Harcanan: ${(spent / 100).toStringAsFixed(2)} ₺ / ${(budget / 100).toStringAsFixed(2)} ₺',
-          ),
+          if (budget > 0)
+            Text(
+              'Harcanan: ${(spent / 100).toStringAsFixed(2)} ₺ / ${(budget / 100).toStringAsFixed(2)} ₺',
+            )
+          else
+            const Text('Bütçe tanımlı değil'),
           const SizedBox(height: 24),
           Text(
             'Son Güncellemeler',
@@ -83,6 +73,47 @@ class ProjectSummaryTab extends ConsumerWidget {
   }
 }
 
+class _StatsGrid extends StatelessWidget {
+  const _StatsGrid({required this.summary});
+
+  final ProjectSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = [
+      ('Toplam Gelir', summary.income, Colors.greenAccent),
+      ('Toplam Gider', summary.expense, Colors.redAccent),
+      ('Çalışan Maliyeti', summary.workerCost, Colors.orangeAccent),
+      ('Hakediş Ödemeleri', summary.payrollPaid, Colors.blueGrey),
+      ('Toplam Borç', summary.debt, Colors.purpleAccent),
+      ('Net Kâr', summary.net, Colors.blueAccent),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 500;
+        final itemWidth =
+            isNarrow ? constraints.maxWidth : (constraints.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: cards
+              .map(
+                (card) => SizedBox(
+                  width: itemWidth,
+                  child: SummaryStatCard(
+                    label: card.$1,
+                    amount: card.$2,
+                    color: card.$3,
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
 class SummaryStatCard extends StatelessWidget {
   const SummaryStatCard({
     super.key,
@@ -97,25 +128,22 @@ class SummaryStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: color.withOpacity(0.15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 8),
-            Text(
-              '${(amount / 100).toStringAsFixed(2)} ₺',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: color.withOpacity(0.15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          Text(
+            '${(amount / 100).toStringAsFixed(2)} ₺',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
       ),
     );
   }

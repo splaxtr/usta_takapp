@@ -87,6 +87,11 @@ class PaymentFormNotifier extends StateNotifier<PaymentFormState> {
       await _repo.insertPayment(payment);
       await _ref.read(workerNotifierProvider.notifier).loadWorkers();
       await _ref.read(projectNotifierProvider.notifier).loadProjects();
+      if (state.projectId != null) {
+        await _ref
+            .read(projectNotifierProvider.notifier)
+            .loadProjectDetail(state.projectId!);
+      }
       await _ref.read(dashboardProvider.notifier).refresh();
       state = state.copyWith(saving: false);
       return true;

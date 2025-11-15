@@ -1,12 +1,3 @@
-class ProjectSummaryStats {
-  final int income;
-  final int expense;
-
-  const ProjectSummaryStats({required this.income, required this.expense});
-
-  int get netBalance => income - expense;
-}
-
 class WorkerProjectStats {
   final int totalDays;
   final int totalCost;

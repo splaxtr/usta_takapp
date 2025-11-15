@@ -4,13 +4,14 @@ import '../../../core/providers/app_providers.dart';
 import '../data/project_repository.dart';
 import '../domain/project.dart';
 import '../domain/project_metrics.dart';
+import '../domain/project_summary.dart';
 import 'project_state.dart';
 
 final projectNotifierProvider =
     StateNotifierProvider<ProjectNotifier, ProjectState>((ref) {
-      final repo = ref.read(projectRepositoryProvider);
-      return ProjectNotifier(repo)..loadProjects();
-    });
+  final repo = ref.read(projectRepositoryProvider);
+  return ProjectNotifier(repo)..loadProjects();
+});
 
 class ProjectNotifier extends StateNotifier<ProjectState> {
   ProjectNotifier(this._repo) : super(ProjectState.initial());
@@ -21,7 +22,7 @@ class ProjectNotifier extends StateNotifier<ProjectState> {
     try {
       state = state.copyWith(loading: true, error: null);
       final projects = await _repo.fetchAll();
-      final summaries = <int, ProjectSummaryStats>{};
+      final summaries = <int, ProjectSummary>{};
       for (final project in projects) {
         if (project.id != null) {
           summaries[project.id!] = await _repo.getProjectSummary(project.id!);
@@ -45,7 +46,7 @@ class ProjectNotifier extends StateNotifier<ProjectState> {
         state = state.copyWith(loading: false, error: 'Proje bulunamadı');
         return;
       }
-      state = state.copyWith(selectedProject: project);
+      state = state.copyWith(selectedProject: project, clearSummary: true);
       await loadSummary(projectId);
       await loadTransactions(projectId);
       await loadDebts(projectId);
@@ -60,9 +61,7 @@ class ProjectNotifier extends StateNotifier<ProjectState> {
   Future<void> loadSummary(int projectId) async {
     final summary = await _repo.getProjectSummary(projectId);
     state = state.copyWith(
-      incomeTotal: summary.income,
-      expenseTotal: summary.expense,
-      netBalance: summary.netBalance,
+      summary: summary,
       projectSummaries: {...state.projectSummaries, projectId: summary},
     );
   }

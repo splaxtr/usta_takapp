@@ -6,7 +6,7 @@ import '../../../core/router/route_args.dart';
 import '../../../core/widgets/common_app_bar.dart';
 import '../application/project_notifier.dart';
 import '../domain/project.dart';
-import '../domain/project_metrics.dart';
+import '../domain/project_summary.dart';
 
 class ProjectListPage extends ConsumerWidget {
   const ProjectListPage({super.key});
@@ -69,7 +69,7 @@ class ProjectCard extends StatelessWidget {
   });
 
   final Project project;
-  final ProjectSummaryStats? summary;
+  final ProjectSummary? summary;
   final VoidCallback onTap;
 
   @override

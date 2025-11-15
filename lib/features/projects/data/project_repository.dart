@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import '../../../core/database/app_database.dart' as db;
 import '../../debts/domain/debt.dart';
 import '../../finance/domain/income_expense.dart';
+import '../../projects/domain/project_summary.dart';
 import '../../workers/domain/payment.dart';
 import '../../workers/domain/worker.dart';
 import '../domain/project.dart';
-import '../domain/project_metrics.dart';
 
 class ProjectMapper {
   static Project toDomain(db.Project row) => Project(
@@ -78,29 +78,79 @@ class ProjectRepository {
     return row == null ? null : ProjectMapper.toDomain(row);
   }
 
-  Future<ProjectSummaryStats> getProjectSummary(int projectId) async {
-    final incomeRow = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = ?2',
-      variables: [
-        Variable<int>(projectId),
-        const Variable<String>('income'),
-      ],
-      readsFrom: {_db.incomeExpense},
-    ).getSingle();
+  Future<int> getProjectIncome(int projectId) =>
+      _sumIncomeExpense(projectId, 'income');
 
-    final expenseRow = await _db.customSelect(
-      'SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = ?2',
-      variables: [
-        Variable<int>(projectId),
-        const Variable<String>('expense'),
-      ],
-      readsFrom: {_db.incomeExpense},
-    ).getSingle();
+  Future<int> getProjectExpense(int projectId) =>
+      _sumIncomeExpense(projectId, 'expense');
 
-    return ProjectSummaryStats(
-      income: incomeRow.read<int>('total'),
-      expense: expenseRow.read<int>('total'),
+  Future<int> getProjectDebt(int projectId) async {
+    final row = await _db.customSelect(
+      '''
+        SELECT COALESCE(SUM(d.amount - COALESCE((
+          SELECT SUM(dp.amount) FROM debt_payments dp WHERE dp.debt_id = d.id
+        ), 0)), 0) AS total
+        FROM debts d
+        WHERE d.project_id = ?1 AND d.status IN ('pending','partial')
+      ''',
+      variables: [Variable<int>(projectId)],
+      readsFrom: {_db.debts, _db.debtPayments},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> getProjectWorkerCost(int projectId) async {
+    final row = await _db.customSelect(
+      '''
+      SELECT COALESCE(SUM(w.daily_rate * wa.hours), 0) AS total
+      FROM worker_assignments wa
+      INNER JOIN workers w ON w.id = wa.worker_id
+      WHERE wa.project_id = ?1
+      ''',
+      variables: [Variable<int>(projectId)],
+      readsFrom: {_db.workerAssignments, _db.workers},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<int> getProjectPayroll(int projectId) async {
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount), 0) AS total FROM payments WHERE project_id = ?1',
+      variables: [Variable<int>(projectId)],
+      readsFrom: {_db.payments},
+    ).getSingle();
+    return row.read<int>('total');
+  }
+
+  Future<ProjectSummary> getProjectSummary(int projectId) async {
+    final project = await fetchById(projectId);
+    final results = await Future.wait([
+      getProjectIncome(projectId),
+      getProjectExpense(projectId),
+      getProjectWorkerCost(projectId),
+      getProjectPayroll(projectId),
+      getProjectDebt(projectId),
+    ]);
+    return ProjectSummary(
+      income: results[0] as int,
+      expense: results[1] as int,
+      workerCost: results[2] as int,
+      payrollPaid: results[3] as int,
+      debt: results[4] as int,
+      budget: project?.budget ?? 0,
     );
+  }
+
+  Future<int> _sumIncomeExpense(int projectId, String type) async {
+    final row = await _db.customSelect(
+      'SELECT COALESCE(SUM(amount), 0) AS total FROM income_expense WHERE project_id = ?1 AND type = ?2',
+      variables: [
+        Variable<int>(projectId),
+        Variable<String>(type),
+      ],
+      readsFrom: {_db.incomeExpense},
+    ).getSingle();
+    return row.read<int>('total');
   }
 
   Future<List<IncomeExpenseModel>> getTransactionsForProject(

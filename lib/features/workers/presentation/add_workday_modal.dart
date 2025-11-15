@@ -61,6 +61,9 @@ class _AddWorkdayModalState extends ConsumerState<AddWorkdayModal> {
         );
         return;
       }
+      await ref
+          .read(projectNotifierProvider.notifier)
+          .loadProjectDetail(selectedProject);
       Navigator.pop(context);
     }
 
